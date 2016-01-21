@@ -1,0 +1,19 @@
+﻿<UserControl
+    x:Class="NextMeeting.Controls.BodyEventControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NextMeeting"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Name="BodyEventUserControl"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <TextBlock Name="BodyTextBlock" TextWrapping="WrapWholeWords" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        <WebView Name="BodyWebview" 
+                 Margin="0,0,5,10"
+                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    </Grid>
+</UserControl>

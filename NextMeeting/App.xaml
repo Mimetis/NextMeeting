@@ -1,0 +1,26 @@
+﻿<Application
+    x:Class="NextMeeting.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NextMeeting"
+    xmlns:rd="using:NextMeeting.Ressources"
+    xmlns:conv="using:NextMeeting.Converters"
+    RequestedTheme="Light">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Ressources/StylesRessources.xaml"/>
+                <rd:DataTemplates  />
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!--tenant yeomim-->
+            <x:String x:Key="ida:ClientID">9da67e3f-3cf9-4793-b924-bbecf9accccf</x:String>
+            
+            <!--tenant microsoft-->
+            <!--<x:String x:Key="ida:ClientID">75d21fc3-9287-4fe1-a04b-fc538e308a27</x:String>-->
+            
+            <conv:DebugConverter x:Key="DebugConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
