@@ -55,6 +55,42 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
+                        <ListView ItemsSource="{x:Bind Event.TeamWork, Mode=OneWay}" 
+                                  HorizontalAlignment="Stretch"
+                                  Grid.Row="1" 
+                                  x:Name="WorkTeamListView"
+                                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                  SelectionMode="None"
+                                  ItemContainerStyle="{StaticResource ItemsViewItemStyle}"
+                                  IsItemClickEnabled="False"   
+                                  IsRightTapEnabled="False"
+                                  IsDoubleTapEnabled="False"
+                                  IsTapEnabled="False"
+                                  ItemTemplate="{StaticResource SearchItemUserTemplate}"
+                                  HorizontalContentAlignment="Stretch">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <!--<VirtualizingStackPanel 
+                                    Orientation="Vertical" 
+                                    VirtualizingStackPanel.VirtualizationMode="Recycling" />-->
+                                    <ItemsStackPanel CacheLength="4" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                        </ListView>
+                    </Grid>
+                </PivotItem.Content>
+            </PivotItem>
+
+            <PivotItem Tag="people">
+                <PivotItem.Header>
+                    <ctrl:PivotItemHeaderControl Symbol="People" />
+                </PivotItem.Header>
+                <PivotItem.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
                         <Button Grid.Row="0" Click="Button_Click" HorizontalAlignment="Stretch" Content="Stats" Margin="5" Style="{StaticResource TextBlockButtonStyle}" />
                         <common:DebugListView ItemsSource="{x:Bind Event.Attendees, Mode=OneWay}" 
                                   HorizontalAlignment="Stretch"
@@ -70,13 +106,13 @@
                                   ItemTemplate="{StaticResource AttendeesTemplate}"
                                   HorizontalContentAlignment="Stretch">
                             <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <!--<VirtualizingStackPanel 
+                                <ItemsPanelTemplate>
+                                    <!--<VirtualizingStackPanel 
                                     Orientation="Vertical" 
                                     VirtualizingStackPanel.VirtualizationMode="Recycling" />-->
                                     <ItemsStackPanel CacheLength="4" />
                                 </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
+                            </ListView.ItemsPanel>
                         </common:DebugListView>
                     </Grid>
                 </PivotItem.Content>

@@ -118,6 +118,7 @@
     <Compile Include="Models\EventViewModel.cs" />
     <Compile Include="Models\DriveItemViewModel.cs" />
     <Compile Include="Models\ProfileViewModel.cs" />
+    <Compile Include="Models\SearchItem.cs" />
     <Compile Include="Models\TrendingAroundItem.cs" />
     <Compile Include="Models\TrendingViewModel.cs" />
     <Compile Include="Models\CacheManager.cs" />

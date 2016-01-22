@@ -52,6 +52,8 @@ namespace NextMeeting.Models
         private TaskScheduler uiScheduler;
         private List<Microsoft.Graph.DriveItem> internalDrivesItems;
         private List<TrendingAroundItem> internalTrendings;
+        
+
         public Microsoft.Graph.ItemBody Body { get; set; }
         public String Id { get; set; }
         public string BodyPreview { get; set; }
@@ -109,6 +111,8 @@ namespace NextMeeting.Models
             }
         }
         public ObservableCollection<AttendeeViewModel> Attendees { get; set; }
+        public ObservableCollection<SearchItemUser> TeamWork { get; set; }
+        
         public ObservableCollection<AttendeeViewModel> TopAttendees
         {
             get
@@ -283,7 +287,9 @@ namespace NextMeeting.Models
 
             var t2 = this.UpdateAttendeesAsync(token);
 
-            await Task.WhenAll(new[] { t1, t2 });
+            var t3 = this.UpdateWorkTeamAsync(token);
+
+            await Task.WhenAll(new[] { t1, t2, t3 });
 
         }
 
@@ -299,6 +305,7 @@ namespace NextMeeting.Models
             this.StartingDate = DateTime.Parse(ev.Start.DateTime).ToLocalTime();
             this.EndingDate = DateTime.Parse(ev.End.DateTime).ToLocalTime();
             this.Attendees = new ObservableCollection<AttendeeViewModel>();
+            this.TeamWork = new ObservableCollection<SearchItemUser>();
             this.Location = ev.Location.DisplayName;
             this.BodyPreview = ev.BodyPreview;
             this.Body = ev.Body;
@@ -381,6 +388,25 @@ namespace NextMeeting.Models
             await UserViewModel.UpdateUsersAsync(users, token);
 
         }
+        private async Task UpdateWorkTeamAsync(CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+                return;
+            this.TeamWork.Clear();
+
+            var uri = GraphExtensions.GetManagerByUserUri("ME");
+
+            var uri2 = "search/query?Querytext=%27*%27&Properties=%27GraphQuery:ACTOR(ME\\,action\\:1015)%27&SourceId=%27b09a7990-05ea-4af9-81ef-edfab16c4e31%27&SelectProperties=%27UserName,DocId%27&RowLimit=36";
+
+            var users =await GraphExtensions.SearchUsersAsync(uri2);
+
+            foreach(var u in users)
+            {
+                this.TeamWork.Add(u);
+            }
+
+        }
+
         public async Task UpdateTopAttendeesAsync(CancellationToken token)
         {
             await InternalUpdateAttendeesAsync(token, this.TopAttendees);
@@ -389,6 +415,9 @@ namespace NextMeeting.Models
         {
             await InternalUpdateAttendeesAsync(token, this.Attendees);
         }
+
+
+
         public async Task LoadTrendingAndFilesAsync(bool forceRefresh, CancellationToken token)
         {
             if (token.IsCancellationRequested)

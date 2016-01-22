@@ -14,6 +14,7 @@ using Windows.Storage;
 using System.Diagnostics;
 using NextMeeting.Common;
 using NextMeeting.Models;
+using System.Net.Http.Headers;
 
 namespace NextMeeting.Graph
 {
@@ -22,75 +23,279 @@ namespace NextMeeting.Graph
     /// </summary>
     public static class GraphExtensions
     {
+        private const string SearchBase = "search/query?";
 
+        private const string SelectPropertiesDocs = "SelectProperties='Author,AuthorOwsUser,ContentClass,ContentTypeId,DefaultEncodingURL,DocId,DocumentPreviewMetadata,Edges,EditorOwsUser,FileExtension,FileType,HitHighlightedProperties,HitHighlightedSummary,LastModifiedTime,ListID,ListItemID,MediaDuration,OriginalPath,Path,PictureThumbnailURL,PrivacyIndicator,Rank,SPWebUrl,SecondaryFileExtension,ServerRedirectedPreviewURL,ServerRedirectedURL,SitePath,SiteTitle,Title,ViewCountLifetime,siteID,uniqueID,webID";
+        private const string SelectPropertiesUser = "SelectProperties='UserName,DocId'";
 
-        //public async static System.Threading.Tasks.Task<BitmapImage> GetThumbnail(
-        //  this IDriveFetcher itemFetcher, string driveId, string itemId)
-        //{
-        //HttpClient client = new HttpClient();
-        //var token = await AuthenticationHelper.GetTokenHelperAsync();
-        //client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+        private const string QueryTemplate = "QueryTemplate='((NOT HideFromDelve:True) AND (FileExtension:doc OR FileExtension:docx OR FileExtension:ppt OR FileExtension:pptx OR FileExtension:xls OR FileExtension:xlsx OR FileExtension:pdf OR ContentTypeId:0x010100F3754F12A9B6490D9622A01FE9D8F012* OR contentclass:ExternalLink))";
 
-        //var urlString = String.Format("{0}drives/{1}/items/{2}/thumbnails/"
-        //    , AuthenticationHelper.GraphEndpointId, driveId, itemId);
+        private const string QueryText = "Querytext='*'";
 
+        private const string RankinModelId = "RankingModelId='0c77ded8-c3ef-466d-929d-905670ea1d72'";
 
-        //Uri usersEndpoint = new Uri(urlString);
+        private const string RowLimit = "RowLimit=36";
 
-        //HttpResponseMessage response = await client.GetAsync(usersEndpoint);
+        private const string StartRow = "StartRow=0";
 
-        //if (response.IsSuccessStatusCode)
-        //{
+        private const string ClientType = "ClientType='PulseWeb'";
 
-        //    string responseContent = await response.Content.ReadAsStringAsync();
+        private const string BypassResultTypes = "BypassResultTypes=true";
 
-        //    var jResult = JObject.Parse(responseContent);
+        private const string EnableQueryRules = "EnableQueryRules=false";
 
-        //    foreach (JObject thumbDetails in jResult["value"])
-        //    {
-        //        Debug.WriteLine(thumbDetails);
+        private const string ProcessBestBets = "ProcessBestBets=false";
 
-        //        var thumbItem = thumbDetails.ToObject<ThumbnailSet>();
+        private const string ProcessPersonalFavorites = "ProcessPersonalFavorites=false";
 
-        //        if (thumbItem == null || thumbItem.Small == null)
-        //            continue;
+        private const string SortList = "SortList='LastModifiedTime:descending'";
 
-        //        var smallUrl = thumbItem.Small.Url;
-        //        var capablities = await AuthenticationHelper.GetCapabilities();
+        private const string SourceId = "SourceId='b09a7990-05ea-4af9-81ef-edfab16c4e31'";
 
-        //        var capability = capablities.Where(
-        //            c => smallUrl.Contains(c.Value.ServiceResourceId)).FirstOrDefault();
+        public static string GetWorkTeamByUserUri(string userId = "ME")
+        {
+            StringBuilder uriBuilder = new StringBuilder();
+            uriBuilder.Append(SearchBase);
+            uriBuilder.AppendFormat("?{0}", QueryText);
+            uriBuilder.AppendFormat("&{0}", SourceId);
+            uriBuilder.AppendFormat("&{0}", SelectPropertiesUser);
+            uriBuilder.AppendFormat("&{0}", RowLimit);
+            uriBuilder.AppendFormat(@"&Properties='GraphQuery:ACTOR({0}\,action\:1015)'", userId);
 
-        //        if (capability.Value == null)
-        //            continue;
+            return Uri.EscapeDataString(uriBuilder.ToString());
+        }
 
-        //        Debug.WriteLine(capability.Value);
+        public static string GetManagerByUserUri(string userId = "ME")
+        {
+            StringBuilder uriBuilder = new StringBuilder();
+            uriBuilder.Append(SearchBase);
+            uriBuilder.AppendFormat("?{0}", QueryText);
+            uriBuilder.AppendFormat("&{0}", SourceId);
+            uriBuilder.AppendFormat("&{0}", SelectPropertiesUser);
+            uriBuilder.AppendFormat(@"&Properties='GraphQuery:ACTOR({0}\,action\:1013)'", userId);
 
-        //        string thumbUri = String.Format("{0}/drive/{1}/items/{2}/thumbnails/{3}/{4}/content",
-        //            capability.Value.ServiceEndpointUri.AbsoluteUri, driveId, itemId, thumbItem.Id, "small");
+            return Uri.EscapeDataString(uriBuilder.ToString());
+        }
 
+        public static string GetLastModifiedByUserUri(string userId = "ME")
+        {
+            StringBuilder uriBuilder = new StringBuilder();
+            uriBuilder.Append(SearchBase);
+            uriBuilder.AppendFormat("?{0}", QueryTemplate);
+            uriBuilder.AppendFormat("&{0}", SelectPropertiesDocs);
+            uriBuilder.AppendFormat("&{0}", RankinModelId);
+            uriBuilder.AppendFormat("&{0}", SortList);
+            uriBuilder.AppendFormat("&{0}", RowLimit);
+            uriBuilder.AppendFormat("&{0}", StartRow);
+            uriBuilder.AppendFormat("&{0}", ClientType);
+            uriBuilder.AppendFormat("&{0}", BypassResultTypes);
+            uriBuilder.AppendFormat("&{0}", EnableQueryRules);
+            uriBuilder.AppendFormat("&{0}", ProcessBestBets);
+            uriBuilder.AppendFormat("&{0}", ProcessPersonalFavorites);
+            uriBuilder.AppendFormat(@"&Properties='GraphQuery:ACTOR({0}\,action\:1003)'", userId);
 
-        //        HttpClient clientThumb = new HttpClient();
-        //        var thumbResourceToken = await AuthenticationHelper.GetAccessTokenForResource(capability.Value.ServiceResourceId);
-        //        clientThumb.DefaultRequestHeaders.Add("Authorization", "Bearer " + thumbResourceToken);
+            return Uri.EscapeDataString(uriBuilder.ToString());
 
-        //        HttpResponseMessage responseThumb = await clientThumb.GetAsync(new Uri(thumbUri));
+        }
 
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            var responseContentThumb = await response.Content.ReadAsStringAsync();
+        public static string GetLastViewByUserUri(string userId = "ME")
+        {
+            StringBuilder uriBuilder = new StringBuilder();
+            uriBuilder.Append(SearchBase);
+            uriBuilder.AppendFormat("?{0}", QueryTemplate);
+            uriBuilder.AppendFormat("&{0}", SelectPropertiesDocs);
+            uriBuilder.AppendFormat("&{0}", RankinModelId);
+            uriBuilder.AppendFormat("&{0}", SortList);
+            uriBuilder.AppendFormat("&{0}", RowLimit);
+            uriBuilder.AppendFormat("&{0}", StartRow);
+            uriBuilder.AppendFormat("&{0}", ClientType);
+            uriBuilder.AppendFormat("&{0}", BypassResultTypes);
+            uriBuilder.AppendFormat("&{0}", EnableQueryRules);
+            uriBuilder.AppendFormat("&{0}", ProcessBestBets);
+            uriBuilder.AppendFormat("&{0}", ProcessPersonalFavorites);
+            uriBuilder.AppendFormat(@"&Properties='GraphQuery:ACTOR({0}\,action\:1001)'", userId);
 
-        //            Debug.WriteLine(responseContentThumb);
-        //        }
+            return Uri.EscapeDataString(uriBuilder.ToString());
 
-        //        //items.Add(item);
-        //    }
-        //}
+        }
 
-        //    return null;
-        //}
+       
+        public async static Task<List<SearchItemUser>> SearchUsersAsync(string search)
+        {
 
+            var lst = new List<SearchItemUser>();
+            var capabilities = await AuthenticationHelper.GetCapabilities();
 
+            var sharepointCapability = capabilities.FirstOrDefault(c => c.Key == "RootSite");
+
+            using (HttpClient client = new HttpClient())
+            {
+                var token = await AuthenticationHelper.GetTokenHelperAsync(null, sharepointCapability.Value.ServiceResourceId);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var uri = String.Format("{0}/{1}", sharepointCapability.Value.ServiceEndpointUri.AbsoluteUri, search);
+                Uri usersEndpoint = new Uri(uri);
+
+                using (HttpResponseMessage response = await client.GetAsync(usersEndpoint))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseContent = await response.Content.ReadAsStringAsync();
+
+                        var jResult = JObject.Parse(responseContent);
+
+                        if (jResult["PrimaryQueryResult"] == null || jResult["PrimaryQueryResult"]["RelevantResults"] == null
+                            || jResult["PrimaryQueryResult"]["RelevantResults"]["Table"] == null
+                            || jResult["PrimaryQueryResult"]["RelevantResults"]["Table"]["Rows"] == null
+                            )
+                            return null;
+
+                        var cellsObject = jResult["PrimaryQueryResult"]["RelevantResults"]["Table"]["Rows"] as JArray;
+
+                        foreach (var cellObject in cellsObject)
+                        {
+                            var cells = cellObject["Cells"];
+                            var searchItem = new SearchItemUser();
+                            lst.Add(searchItem);
+                            foreach (var val in cells)
+                            {
+                                var searchValue = val.ToObject<SearchValue>();
+                                switch (searchValue.Key)
+                                {
+                                    case "UserName":
+                                        searchItem.UserName = searchValue.Value;
+                                        break;
+                                    case "DocId":
+                                        searchItem.DocId = searchValue.Value;
+                                        break;
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            return lst;
+
+        }
+
+        public async static Task<List<SearchItemDocs>> GetSearchDocs(string search)
+        {
+
+            var lst = new List<SearchItemDocs>();
+            var capabilities = await AuthenticationHelper.GetCapabilities();
+
+            var sharepointCapability = capabilities.FirstOrDefault(c => c.Key == "RootSite");
+
+            using (HttpClient client = new HttpClient())
+            {
+                var token = await AuthenticationHelper.GetTokenHelperAsync(null, sharepointCapability.Value.ServiceResourceId);
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var uri = String.Format("{0}/{1}", sharepointCapability.Value.ServiceEndpointUri.AbsoluteUri, search);
+                Uri usersEndpoint = new Uri(uri);
+
+                using (HttpResponseMessage response = await client.GetAsync(usersEndpoint))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseContent = await response.Content.ReadAsStringAsync();
+
+                        var jResult = JObject.Parse(responseContent);
+
+                        if (jResult["PrimaryQueryResult"] == null || jResult["PrimaryQueryResult"]["RelevantResults"] == null
+                            || jResult["PrimaryQueryResult"]["RelevantResults"]["Table"] == null
+                            || jResult["PrimaryQueryResult"]["RelevantResults"]["Table"]["Rows"] == null
+                            )
+                            return null;
+
+                        var cellsObject = jResult["PrimaryQueryResult"]["RelevantResults"]["Table"]["Rows"] as JArray;
+
+                        foreach (var cellObject in cellsObject)
+                        {
+                            var cells = cellObject["Cells"];
+                            var searchItem = new SearchItemDocs();
+                            lst.Add(searchItem);
+                            foreach (var val in cells)
+                            {
+                                var searchValue = val.ToObject<SearchValue>();
+                                switch (searchValue.Key)
+                                {
+                                    case "Rank":
+                                        searchItem.Rank = searchValue.Value;
+                                        break;
+                                    case "DocId":
+                                        searchItem.DocId = searchValue.Value;
+                                        break;
+                                    case "Title":
+                                        searchItem.Title = searchValue.Value;
+                                        break;
+                                    case "Author":
+                                        searchItem.Author = searchValue.Value;
+                                        break;
+                                    case "AuthorOwsUser":
+                                        searchItem.AuthorOwsUser = searchValue.Value;
+                                        break;
+                                    case "ContentClass":
+                                        searchItem.ContentClass = searchValue.Value;
+                                        break;
+                                    case "ContentTypeId":
+                                        searchItem.ContentTypeId = searchValue.Value;
+                                        break;
+                                    case "DefaultEncodingURL":
+                                        searchItem.DefaultEncodingURL = searchValue.Value;
+                                        break;
+                                    case "DocumentPreviewMetadata":
+                                        searchItem.DocumentPreviewMetadata = searchValue.Value;
+                                        break;
+                                    case "Edges":
+                                        searchItem.Edges = searchValue.Value;
+                                        break;
+                                    case "EditorOwsUser":
+                                        searchItem.EditorOwsUser = searchValue.Value;
+                                        break;
+                                    case "FileExtension":
+                                        searchItem.FileExtension = searchValue.Value;
+                                        break;
+                                    case "FileType":
+                                        searchItem.FileType = searchValue.Value;
+                                        break;
+                                    case "HitHighlightedProperties":
+                                        searchItem.HitHighlightedProperties = searchValue.Value;
+                                        break;
+                                    case "HitHighlightedSummary":
+                                        searchItem.HitHighlightedSummary = searchValue.Value;
+                                        break;
+                                    case "LastModifiedTime":
+                                        searchItem.LastModifiedTime = searchValue.Value;
+                                        break;
+                                    case "Path":
+                                        searchItem.Path = searchValue.Value;
+                                        break;
+                                    case "SPWebUrl":
+                                        searchItem.SPWebUrl = searchValue.Value;
+                                        break;
+                                    case "ServerRedirectedPreviewURL":
+                                        searchItem.ServerRedirectedPreviewURL = searchValue.Value;
+                                        break;
+                                    case "SitePath":
+                                        searchItem.SitePath = searchValue.Value;
+                                        break;
+                                    case "SiteTitle":
+                                        searchItem.SiteTitle = searchValue.Value;
+                                        break;
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            return lst;
+
+        }
 
         public async static Task<Tuple<BitmapImage, Uri>> GetPhoto(
             this IProfilePhotoFetcher photoFetcher, string identifier)

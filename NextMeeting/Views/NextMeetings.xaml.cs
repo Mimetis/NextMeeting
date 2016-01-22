@@ -24,6 +24,8 @@ using Windows.UI.Xaml.Media.Animation;
 using System.Diagnostics;
 using System.Threading;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -52,7 +54,7 @@ namespace NextMeeting.Views
             cacheEventDays = CacheManager<EventDayViewModel>.Get("EventDays");
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
-         }
+        }
         public ObservableCollection<EventDayViewModel> Events
         {
             get
@@ -70,34 +72,8 @@ namespace NextMeeting.Views
         {
             base.OnNavigatedTo(e);
 
-            var capabilities = await AuthenticationHelper.GetCapabilities();
 
-            var sharepointCapability = capabilities.FirstOrDefault(c => c.Key == "RootSite");
-
-            // your manager
-            // search/query?Querytext='*'&amp;Properties='GraphQuery:ACTOR(ME\,action\:1013)'
-
-            // first ten items that you recently modified or viewed
-            // search/query?Querytext='*'&amp;Properties='GraphQuery:ACTOR(ME\,OR(action\:1001\,action\:1003))'
-
-            var search = @"search/query?QueryTemplate=%27((NOT%20HideFromDelve%3ATrue)%20AND%20(FileExtension%3Adoc%20OR%20FileExtension%3Adocx%20OR%20FileExtension%3Appt%20OR%20FileExtension%3Apptx%20OR%20FileExtension%3Axls%20OR%20FileExtension%3Axlsx%20OR%20FileExtension%3Apdf%20OR%20ContentTypeId%3A0x010100F3754F12A9B6490D9622A01FE9D8F012*%20OR%20contentclass%3AExternalLink))%27&Properties=%27TitleBasedSummaries%3Atrue,IncludeExternalContent%3Atrue,GraphQuery%3Aand(actor(me%5C%2Caction%5C%3A1021)%5C%2Cactor(me%5C%2Cor(action%5C%3A1021%5C%2Caction%5C%3A1036%5C%2Caction%5C%3A1037%5C%2Caction%5C%3A1039%5C%2Caction%5C%3A1052%5C%2Caction%5C%3A1048))),GraphRankingModel%3Aaction%5C%3A1021%5C%2Cweight%5C%3A1%5C%2CedgeFunc%5C%3Aweight%5C%2CmergeFunc%5C%3Amax%27&SelectProperties=%27Author,AuthorOwsUser,ContentClass,ContentTypeId,DefaultEncodingURL,DocId,DocumentPreviewMetadata,Edges,EditorOwsUser,FileExtension,FileType,HitHighlightedProperties,HitHighlightedSummary,LastModifiedTime,LikeCountLifetime,ListID,ListItemID,MediaDuration,OriginalPath,Path,PictureThumbnailURL,PrivacyIndicator,Rank,SPWebUrl,SecondaryFileExtension,ServerRedirectedPreviewURL,ServerRedirectedURL,SitePath,SiteTitle,Title,ViewCountLifetime,siteID,uniqueID,webID%27&RankingModelId=%270c77ded8-c3ef-466d-929d-905670ea1d72%27&RowLimit=36&ClientType=%27PulseWeb%27&BypassResultTypes=true&EnableQueryRules=false&ProcessBestBets=false&ProcessPersonalFavorites=false";
-
-            using (HttpClient client = new HttpClient())
-            {
-                var token = await AuthenticationHelper.GetTokenHelperAsync(null, sharepointCapability.Value.ServiceResourceId);
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
-
-                var uri = String.Format("{0}/{1}", sharepointCapability.Value.ServiceEndpointUri.AbsoluteUri, search);
-                Uri usersEndpoint = new Uri(uri);
-
-                using (HttpResponseMessage response = await client.GetAsync(usersEndpoint))
-                {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var r = await response.Content.ReadAsStringAsync();
-                    }
-                }
-            }
+ 
 
             using (this.TokenSource = new CancellationTokenSource())
             {
@@ -188,7 +164,7 @@ namespace NextMeeting.Views
             if (forceRefresh)
                 cacheEventDays.Clear();
 
-            
+
             try
             {
                 var events = await this.Graph.Context.ExecuteAsync<Microsoft.Graph.Event, Microsoft.Graph.IEvent>(dsq);
@@ -200,7 +176,7 @@ namespace NextMeeting.Views
                     allEvents.AddRange(events.CurrentPage.ToList());
                 }
 
-                
+
             }
             catch (Exception ex)
             {

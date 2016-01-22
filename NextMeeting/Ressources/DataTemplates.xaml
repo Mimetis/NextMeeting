@@ -233,6 +233,31 @@
         </Grid>
     </DataTemplate>
 
+    <DataTemplate x:DataType="model:SearchItemUser"  x:Key="SearchItemUserTemplate" >
+        <Grid Margin="0,0,0,0" Background="White" HorizontalAlignment="Stretch" Height="60">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border BorderBrush="#C6C6C6C6" Grid.ColumnSpan="4" BorderThickness="1" />
+
+            <Grid Grid.Column="0">
+                <Image Name="WaitingImage" Margin="5"  Source="/Assets/UnknownPerson.jpg"
+                                       Width="50" Height="50" 
+                                       ToolTipService.ToolTip="{x:Bind UserName}"
+                                       x:Phase="1"
+                                       Stretch="UniformToFill" />
+  
+            </Grid>
+            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                <TextBlock Text="{x:Bind UserName}" x:Phase="2" FontWeight="Bold" FontSize="16" />
+            </StackPanel>
+
+        </Grid>
+    </DataTemplate>
+
     <DataTemplate x:DataType="model:EventViewModel" x:Key="DetailsMeetingTemplate">
         <Grid Margin="0,0,0,5"  HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
