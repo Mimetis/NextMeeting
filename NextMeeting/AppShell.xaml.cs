@@ -85,7 +85,7 @@ namespace NextMeeting
                     this.Navigate(typeof(NextMeetings));
             };
 
-            var me = UserViewModel.GetUser(null, settings.Values["userEmail"].ToString(), null);
+            var me = UserViewModel.GetUser(settings.Values["userEmail"].ToString());
 
             this.navLinks = new ObservableCollection<NavLink>()
             {

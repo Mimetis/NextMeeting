@@ -25,10 +25,11 @@ namespace NextMeeting.Models
         }
 
         private UserViewModel user;
+        private string email;
 
         public AttendeeViewModel(Attendee attendee)
         {
-            this.User = UserViewModel.GetUser(null, attendee.EmailAddress.Address, attendee.EmailAddress.Name);
+            this.Email = attendee.EmailAddress.Address;
 
             if (attendee.Status != null)
                 this.Response = attendee.Status.Response;
@@ -66,6 +67,20 @@ namespace NextMeeting.Models
                 {
                     HandleContactClicked(this);
                 }));
+            }
+        }
+
+        public string Email
+        {
+            get
+            {
+                return email;
+            }
+
+            set
+            {
+                email = value;
+                RaisePropertyChanged(nameof(Email));
             }
         }
 

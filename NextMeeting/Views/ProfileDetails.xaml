@@ -28,7 +28,41 @@
             Grid.Row="1" 
             ItemContainerStyle="{StaticResource MeetingDetailsPivotItemStyle}"  >
 
-            <PivotItem Tag="organizer files"  >
+            <PivotItem Tag="user team work">
+                <PivotItem.Header>
+                    <ctrl:PivotItemHeaderControl Symbol="People" />
+                </PivotItem.Header>
+                <PivotItem.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <ListView ItemsSource="{x:Bind Profile.TeamWork, Mode=OneWay}" 
+                                  HorizontalAlignment="Stretch"
+                                  Grid.Row="1" 
+                                  x:Name="WorkTeamListView"
+                                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                  SelectionMode="None"
+                                  ItemContainerStyle="{StaticResource ItemsViewItemStyle}"
+                                  IsItemClickEnabled="False"   
+                                  IsRightTapEnabled="False"
+                                  IsDoubleTapEnabled="False"
+                                  IsTapEnabled="False"
+                                  ItemTemplate="{StaticResource UserViewModelTemplate}"
+                                  HorizontalContentAlignment="Stretch">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                     <ItemsStackPanel CacheLength="4" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                        </ListView>
+                    </Grid>
+                </PivotItem.Content>
+            </PivotItem>
+
+
+            <PivotItem Tag="user recent modified files"  >
                 <PivotItem.Header>
                     <ctrl:PivotItemHeaderControl Symbol="Document" />
                 </PivotItem.Header>
@@ -66,16 +100,16 @@
 
                 </PivotItem.Content>
             </PivotItem>
-            <PivotItem Tag="trending around organizer" >
+            <PivotItem Tag="user trending around files" >
                 <PivotItem.Header>
                     <ctrl:PivotItemHeaderControl Symbol="BrowsePhotos" />
                 </PivotItem.Header>
                 <PivotItem.Content>
                     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <GridView ItemsSource="{x:Bind Profile.Trendings, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource MeetingDetailsTrendingsTemplate}"
+                                  ItemTemplate="{StaticResource MeetingDetailsDriveItemsTemplate}"
                                   HorizontalAlignment="Stretch"
-                                  ItemClick="Trending_ItemClick"
+                                  ItemClick="DriveItem_ItemClick"
                                   ScrollViewer.VerticalScrollBarVisibility="Hidden"
                                   Visibility="{x:Bind Profile.IsLoadingTrendings, Mode=OneWay, Converter={StaticResource NotBooleanVisibilityConverter}}"
                                   SelectionMode="None"
@@ -105,6 +139,43 @@
 
 
             </PivotItem>
+
+            <PivotItem Tag="user shared files with you" >
+                <PivotItem.Header>
+                    <ctrl:PivotItemHeaderControl Symbol="Link" />
+                </PivotItem.Header>
+                <PivotItem.Content>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <GridView ItemsSource="{x:Bind Profile.SharedItems, Mode=OneWay}" 
+                                  ItemTemplate="{StaticResource MeetingDetailsDriveItemsTemplate}"
+                                  HorizontalAlignment="Stretch"
+                                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                  Visibility="{x:Bind Profile.IsLoadingSharedItems, Mode=OneWay, Converter={StaticResource NotBooleanVisibilityConverter}}"
+                                  SelectionMode="None"
+                                  ItemClick="DriveItem_ItemClick"
+                                  ItemContainerStyle="{StaticResource ItemsViewItemStyle}"
+                                  IsItemClickEnabled="True"   
+                                  IsRightTapEnabled="False"
+                                  IsDoubleTapEnabled="False"
+                                  IsTapEnabled="False"
+                                  HorizontalContentAlignment="Stretch">
+                            <GridView.ItemContainerTransitions>
+                                <TransitionCollection>
+                                    <RepositionThemeTransition/>
+                                </TransitionCollection>
+                            </GridView.ItemContainerTransitions>
+                        </GridView>
+
+                        <ctrl:PivotItemWaiter Text="No Files shared beetween you and the organizer founded."
+                                              Visibility="{x:Bind Profile.HasNoSharedItems, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"/>
+
+                        <ctrl:PivotItemWaiter Text="Loading ..."
+                                              Visibility="{x:Bind Profile.IsLoadingSharedItems, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                    </Grid>
+
+                </PivotItem.Content>
+            </PivotItem>
+
         </Pivot>
     </Grid>
 </common:BasePage>

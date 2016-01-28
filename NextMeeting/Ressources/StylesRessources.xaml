@@ -7,13 +7,13 @@
 
 
     <Style x:Key="SymbolButton" TargetType="ToggleButton">
-        <Setter Property="Background" Value="{ThemeResource ToggleButtonBackgroundThemeBrush}"/>
+        <Setter Property="Background" Value="#FF0070C0"/>
         <Setter Property="Foreground" Value="{ThemeResource ToggleButtonForegroundThemeBrush}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource ToggleButtonBorderThemeBrush}"/>
         <Setter Property="BorderThickness" Value="{ThemeResource ToggleButtonBorderThemeThickness}"/>
-        <Setter Property="Padding" Value="12,4,12,5"/>
-        <Setter Property="HorizontalAlignment" Value="Left"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
@@ -99,9 +99,23 @@
                                 <VisualState x:Name="PointerFocused"/>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Content="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        <Rectangle x:Name="FocusVisualWhite" IsHitTestVisible="False" Opacity="0" StrokeDashOffset="1.5" StrokeEndLineCap="Square" Stroke="{ThemeResource FocusVisualWhiteStrokeThemeBrush}" StrokeDashArray="1,1"/>
-                        <Rectangle x:Name="FocusVisualBlack" IsHitTestVisible="False" Opacity="0" StrokeDashOffset="0.5" StrokeEndLineCap="Square" Stroke="{ThemeResource FocusVisualBlackStrokeThemeBrush}" StrokeDashArray="1,1"/>
+                        <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" 
+                                          ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                          ContentTransitions="{TemplateBinding ContentTransitions}" 
+                                          Content="{TemplateBinding Content}" 
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        <Rectangle x:Name="FocusVisualWhite" IsHitTestVisible="True" 
+                                   Opacity="0" StrokeDashOffset="1.5" StrokeEndLineCap="Square" 
+                                   Stroke="{ThemeResource FocusVisualWhiteStrokeThemeBrush}" 
+                                   StrokeDashArray="1,1"/>
+                        <Rectangle x:Name="FocusVisualBlack" IsHitTestVisible="True" Opacity="0" 
+                                   StrokeDashOffset="0.5" StrokeEndLineCap="Square"
+                                   Stroke="{ThemeResource FocusVisualBlackStrokeThemeBrush}" 
+                                   StrokeDashArray="1,1"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

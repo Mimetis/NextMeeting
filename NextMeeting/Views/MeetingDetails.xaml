@@ -45,7 +45,7 @@
                     </Grid>
                 </PivotItem.Content>
             </PivotItem>
-            <PivotItem Tag="people">
+            <PivotItem Tag="organizer team work">
                 <PivotItem.Header>
                     <ctrl:PivotItemHeaderControl Symbol="People" />
                 </PivotItem.Header>
@@ -66,22 +66,18 @@
                                   IsRightTapEnabled="False"
                                   IsDoubleTapEnabled="False"
                                   IsTapEnabled="False"
-                                  ItemTemplate="{StaticResource SearchItemUserTemplate}"
+                                  ItemTemplate="{StaticResource UserViewModelTemplate}"
                                   HorizontalContentAlignment="Stretch">
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <!--<VirtualizingStackPanel 
-                                    Orientation="Vertical" 
-                                    VirtualizingStackPanel.VirtualizationMode="Recycling" />-->
-                                    <ItemsStackPanel CacheLength="4" />
+                                    <ItemsStackPanel CacheLength="2" />
                                 </ItemsPanelTemplate>
                             </ListView.ItemsPanel>
                         </ListView>
                     </Grid>
                 </PivotItem.Content>
             </PivotItem>
-
-            <PivotItem Tag="people">
+            <!--<PivotItem Tag="people">
                 <PivotItem.Header>
                     <ctrl:PivotItemHeaderControl Symbol="People" />
                 </PivotItem.Header>
@@ -107,21 +103,14 @@
                                   HorizontalContentAlignment="Stretch">
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <!--<VirtualizingStackPanel 
-                                    Orientation="Vertical" 
-                                    VirtualizingStackPanel.VirtualizationMode="Recycling" />-->
+                                   
                                     <ItemsStackPanel CacheLength="4" />
                                 </ItemsPanelTemplate>
                             </ListView.ItemsPanel>
                         </common:DebugListView>
                     </Grid>
                 </PivotItem.Content>
-            </PivotItem>
-            <PivotItem Tag="map" >
-                <PivotItem.Header>
-                    <ctrl:PivotItemHeaderControl Symbol="Map" />
-                </PivotItem.Header>
-            </PivotItem>
+            </PivotItem>-->
             <PivotItem Tag="organizer files"  >
                 <PivotItem.Header>
                     <ctrl:PivotItemHeaderControl Symbol="Document" />
@@ -166,12 +155,12 @@
                 <PivotItem.Content>
                     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <GridView ItemsSource="{x:Bind Event.Trendings, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource MeetingDetailsTrendingsTemplate}"
+                                  ItemTemplate="{StaticResource MeetingDetailsDriveItemsTemplate}"
                                   HorizontalAlignment="Stretch"
                                   ScrollViewer.VerticalScrollBarVisibility="Hidden"
                                   Visibility="{x:Bind Event.IsLoadingTrendings, Mode=OneWay, Converter={StaticResource NotBooleanVisibilityConverter}}"
                                   SelectionMode="None"
-                                  ItemClick="Trending_ItemClick"
+                                  ItemClick="DriveItem_ItemClick"
                                   ItemContainerStyle="{StaticResource ItemsViewItemStyle}"
                                   IsItemClickEnabled="True"   
                                   IsRightTapEnabled="False"
@@ -197,6 +186,41 @@
                 </PivotItem.Content>
 
 
+            </PivotItem>
+            <PivotItem Tag="shared files" >
+                <PivotItem.Header>
+                    <ctrl:PivotItemHeaderControl Symbol="Link" />
+                </PivotItem.Header>
+                <PivotItem.Content>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <GridView ItemsSource="{x:Bind Event.SharedItems, Mode=OneWay}" 
+                                  ItemTemplate="{StaticResource MeetingDetailsDriveItemsTemplate}"
+                                  HorizontalAlignment="Stretch"
+                                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                  Visibility="{x:Bind Event.IsLoadingSharedItems, Mode=OneWay, Converter={StaticResource NotBooleanVisibilityConverter}}"
+                                  SelectionMode="None"
+                                  ItemClick="DriveItem_ItemClick"
+                                  ItemContainerStyle="{StaticResource ItemsViewItemStyle}"
+                                  IsItemClickEnabled="True"   
+                                  IsRightTapEnabled="False"
+                                  IsDoubleTapEnabled="False"
+                                  IsTapEnabled="False"
+                                  HorizontalContentAlignment="Stretch">
+                            <GridView.ItemContainerTransitions>
+                                <TransitionCollection>
+                                    <RepositionThemeTransition/>
+                                </TransitionCollection>
+                            </GridView.ItemContainerTransitions>
+                        </GridView>
+
+                        <ctrl:PivotItemWaiter Text="No Files shared beetween you and the organizer founded."
+                                              Visibility="{x:Bind Event.HasNoSharedItems, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"/>
+
+                        <ctrl:PivotItemWaiter Text="Loading ..."
+                                              Visibility="{x:Bind Event.IsLoadingSharedItems, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                    </Grid>
+
+                </PivotItem.Content>
             </PivotItem>
         </Pivot>
     </Grid>

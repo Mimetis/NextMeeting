@@ -37,6 +37,9 @@ namespace NextMeeting.Views
         {
             this.InitializeComponent();
             this.Users = new ObservableCollection<UserViewModel>();
+            this.NavigationCacheMode = NavigationCacheMode.Required;
+            AutoSuggestBox.Text = string.Empty;
+
         }
         public override string Title
         {
@@ -79,54 +82,21 @@ namespace NextMeeting.Views
 
                         List<Microsoft.Graph.IUser> allusers = await Search(sender.Text, TokenSource.Token);
 
-                        // Since we want to show the Users list even if the images are not loaded
-                        this.IsLoading = false;
                         this.ListViewResearch.Focus(FocusState.Programmatic);
 
+                        // Updating all organizers
+                        List<string> usersMail = new List<string>();
+
+                        foreach (var ev in allusers)
+                            usersMail.AddRange(allusers.Select(u => u.UserPrincipalName).ToList());
+
+                        var distinctUsers = usersMail.Distinct().ToList();
+                        await UserViewModel.UpdateUsersFromSharepointAsync(distinctUsers, TokenSource.Token);
+
                         foreach (var user in allusers)
-                        {
-                            UserViewModel uvm = UserViewModel.GetUser(user.Id, null, null);
+                            Users.Add(UserViewModel.GetUser(user.UserPrincipalName));
 
-                            uvm.Name = user.DisplayName;
-                            uvm.UserPrincipalName = user.UserPrincipalName;
-                            uvm.Email = user.Mail;
-                            uvm.Id = user.Id;
-                            uvm.FirstName = user.GivenName;
-
-                            if (string.IsNullOrEmpty(uvm.FirstName))
-                                uvm.FirstName = uvm.Name.Split(' ').Length > 1 ? uvm.Name.Split(' ')[0] : uvm.Name;
-
-                            uvm.IsLoadedFromGraph = true;
-
-                            Users.Add(uvm);
-
-                        }
-                        //for (int i = 0; i < Users.Count; i = i + 3)
-                        //{
-                        //    List<Task> tasks = new List<Task>();
-
-                        //    UserViewModel uvm = Users[i];
-                        //    tasks.Add(uvm.UpdatePhotoAsync(TokenSource.Token));
-
-                        //    if (i + 1 < Users.Count - 1)
-                        //    {
-                        //        uvm = Users[i + 1];
-                        //        tasks.Add(uvm.UpdatePhotoAsync(TokenSource.Token));
-                        //    }
-                        //    if (i + 2 < Users.Count - 1)
-                        //    {
-                        //        uvm = Users[i + 2];
-                        //        tasks.Add(uvm.UpdatePhotoAsync(TokenSource.Token));
-                        //    }
-                        //    if (i + 3 < Users.Count - 1)
-                        //    {
-                        //        uvm = Users[i + 3];
-                        //        tasks.Add(uvm.UpdatePhotoAsync(TokenSource.Token));
-                        //    }
-
-                        //    await Task.WhenAll(tasks.ToArray());
-
-                        //}
+                        this.IsLoading = false;
                     }
                     catch (TaskCanceledException ex)
                     {

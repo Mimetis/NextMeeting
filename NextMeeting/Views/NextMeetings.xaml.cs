@@ -26,6 +26,8 @@ using System.Threading;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Text;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -71,9 +73,6 @@ namespace NextMeeting.Views
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-
-
- 
 
             using (this.TokenSource = new CancellationTokenSource())
             {
@@ -164,7 +163,6 @@ namespace NextMeeting.Views
             if (forceRefresh)
                 cacheEventDays.Clear();
 
-
             try
             {
                 var events = await this.Graph.Context.ExecuteAsync<Microsoft.Graph.Event, Microsoft.Graph.IEvent>(dsq);
@@ -177,29 +175,32 @@ namespace NextMeeting.Views
                 }
 
 
+                if (allEvents != null)
+                {
+                    var gEvents = allEvents.GroupBy(ev => DateTime.Parse(ev.Start.DateTime).Date).ToList();
+                    var gEventsOrdered = gEvents.OrderBy(g => g.Key).ToList();
+
+                    for (int i = 0; i <= gEventsOrdered.Count - 1; i++)
+                    {
+                        var evg = gEventsOrdered[i];
+                        var key = evg.Key;
+                        var lst = evg.ToList().OrderBy(ev => ev.Start.DateTime).ToList();
+
+                        if (!cacheEventDays.Values.Any(temp => temp.DateTime == evg.Key.ToLocalTime()))
+                            cacheEventDays.Values.Add(new EventDayViewModel(evg.Key, i, lst));
+
+                        var evm = cacheEventDays.Values.First(temp => temp.DateTime == evg.Key.ToLocalTime());
+
+                        this.Events.Add(evm);
+
+                    }
+                }
+
+
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-            }
-
-            if (allEvents != null)
-            {
-                var gEvents = allEvents.GroupBy(ev => DateTime.Parse(ev.Start.DateTime).Date).ToList();
-                var gEventsOrdered = gEvents.OrderBy(g => g.Key).ToList();
-
-                for (int i = 0; i <= gEventsOrdered.Count - 1; i++)
-                {
-                    var evg = gEventsOrdered[i];
-                    var key = evg.Key;
-                    var lst = evg.ToList().OrderBy(ev => ev.Start.DateTime).ToList();
-
-                    if (!cacheEventDays.Values.Any(temp => temp.DateTime == evg.Key.ToLocalTime()))
-                        cacheEventDays.Values.Add(new EventDayViewModel(evg.Key, i, lst));
-
-                    this.Events.Add(cacheEventDays.Values.First(temp => temp.DateTime == evg.Key.ToLocalTime()));
-
-                }
             }
 
 
@@ -221,13 +222,41 @@ namespace NextMeeting.Views
 
             sb.Duration = animationOpacity.Duration = animationOpacity2.Duration = TimeSpan.FromMilliseconds(150);
 
-            sb.Completed += (s, o) =>
+            sb.Completed += async (s, o) =>
             {
 
                 ProgressRingLoader.IsActive = false;
                 ProgressRingLoader.Visibility = Visibility.Collapsed;
                 StackPanelLoader.Visibility = Visibility.Collapsed;
                 AppShell.Current.SetTitle("next meetings");
+
+                try
+                {
+                    // Updating all organizers
+                    List<string> usersMail = new List<string>();
+
+                    foreach (var ev in this.Events)
+                        usersMail.AddRange(ev.Events.Select(evm => evm.organizerEmail).ToList());
+
+                    var distinctUsers = usersMail.Distinct().ToList();
+                    await UserViewModel.UpdateUsersFromSharepointAsync(distinctUsers, token);
+
+                    // For each events, Update Organizer user, Top Attendees, First Trendings and First files items 
+                    foreach (var ev in this.Events)
+                        foreach (var evm in ev.Events)
+                            if (evm.ReferenceIndex == "0_0")
+                                await evm.UpdateFirstMeetingItemAsync(forceRefresh, token);
+                            else
+                                evm.UpdateOrganizerUser();
+
+
+                }
+                catch (Exception ex)
+                {
+
+                    Debug.WriteLine(ex.Message);
+                }
+
 
             };
 
@@ -252,11 +281,11 @@ namespace NextMeeting.Views
         {
             EventViewModel eventDvm = (EventViewModel)item;
 
-            // Dont need to wait 
-            if (eventDvm.ReferenceIndex == "0_0")
-                eventDvm.UpdateFirstMeetingItemAsync(false, CancellationToken.None);
-            else
-                eventDvm.UpdateMeetingItemAsync(CancellationToken.None);
+            //// Dont need to wait 
+            //if (eventDvm.ReferenceIndex == "0_0")
+            //    eventDvm.UpdateFirstMeetingItemAsync(false, CancellationToken.None);
+            //else
+            //    eventDvm.UpdateMeetingItemAsync(CancellationToken.None);
 
             return eventDvm.ReferenceIndex == "0_0" ? FirstMeetingTemplate : MeetingTemplate;
         }

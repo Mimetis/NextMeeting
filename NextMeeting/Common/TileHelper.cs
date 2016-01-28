@@ -55,45 +55,45 @@ namespace NextMeeting.Common
 
             content.Children.Add(firstGroup);
 
-            if (evm.TopDriveItems.Count > 0)
-            {
-                var driveItem = evm.TopDriveItems[0];
+            //if (evm.TopDriveItems.Count > 0)
+            //{
+            //    var driveItem = evm.TopDriveItems[0];
 
-                TileGroup secondGroup = new TileGroup();
-                sgroup = new TileSubgroup();
-                TileImage imgExt = new TileImage();
-                imgExt.Source = new TileImageSource(driveItem.FileExtensionIcon.UriSource.AbsoluteUri);
-                sgroup.Children.Add(imgExt);
-                sgroup.Weight = 5;
-                secondGroup.Children.Add(sgroup);
-                sgroup = new TileSubgroup();
-                TileText tt = new TileText();
-                tt.Text = driveItem.Name;
-                sgroup.Children.Add(tt);
-                secondGroup.Children.Add(sgroup);
-                content.Children.Add(secondGroup);
+            //    TileGroup secondGroup = new TileGroup();
+            //    sgroup = new TileSubgroup();
+            //    TileImage imgExt = new TileImage();
+            //    imgExt.Source = new TileImageSource(driveItem.FileExtensionIcon.UriSource.AbsoluteUri);
+            //    sgroup.Children.Add(imgExt);
+            //    sgroup.Weight = 5;
+            //    secondGroup.Children.Add(sgroup);
+            //    sgroup = new TileSubgroup();
+            //    TileText tt = new TileText();
+            //    tt.Text = driveItem.Name;
+            //    sgroup.Children.Add(tt);
+            //    secondGroup.Children.Add(sgroup);
+            //    content.Children.Add(secondGroup);
 
-            }
+            //}
 
-            if (evm.TopTrendings.Count > 0)
-            {
-                var trend = evm.TopTrendings[0];
+            //if (evm.TopTrendings.Count > 0)
+            //{
+            //    var trend = evm.TopTrendings[0];
 
-                TileGroup thirdGroup = new TileGroup();
-                sgroup = new TileSubgroup();
-                TileImage imgExt = new TileImage();
-                imgExt.Source = new TileImageSource(trend.FileExtensionIcon.UriSource.AbsoluteUri);
-                sgroup.Children.Add(imgExt);
-                sgroup.Weight = 5;
-                thirdGroup.Children.Add(sgroup);
-                sgroup = new TileSubgroup();
-                TileText tt = new TileText();
-                tt.Text = trend.Name;
-                sgroup.Children.Add(tt);
-                thirdGroup.Children.Add(sgroup);
-                content.Children.Add(thirdGroup);
+            //    TileGroup thirdGroup = new TileGroup();
+            //    sgroup = new TileSubgroup();
+            //    TileImage imgExt = new TileImage();
+            //    imgExt.Source = new TileImageSource(trend.FileExtensionIcon.UriSource.AbsoluteUri);
+            //    sgroup.Children.Add(imgExt);
+            //    sgroup.Weight = 5;
+            //    thirdGroup.Children.Add(sgroup);
+            //    sgroup = new TileSubgroup();
+            //    TileText tt = new TileText();
+            //    tt.Text = trend.Name;
+            //    sgroup.Children.Add(tt);
+            //    thirdGroup.Children.Add(sgroup);
+            //    content.Children.Add(thirdGroup);
 
-            }
+            //}
 
 
             TileContent tileContent = new TileContent()

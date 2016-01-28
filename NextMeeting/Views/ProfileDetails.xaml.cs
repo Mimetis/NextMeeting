@@ -63,8 +63,8 @@ namespace NextMeeting.Views
 
             try
             {
-                if (!this.User.IsLoadedFromGraph)
-                    await this.User.UpdateUserAsync(CancellationToken.None);
+                //if (!this.User.IsLoadedFromGraph)
+                //    await this.User.UpdateUserAsync(CancellationToken.None);
 
                 await Refresh();
             }
@@ -105,15 +105,7 @@ namespace NextMeeting.Views
             }
 
         }
-        private void Trending_ItemClick(object sender, Windows.UI.Xaml.Controls.ItemClickEventArgs e)
-        {
-            var item = e.ClickedItem as TrendingViewModel;
-
-            if (e == null)
-                return;
-
-            item.OpenItem.Execute(null);
-        }
+      
         private void DriveItem_ItemClick(object sender, Windows.UI.Xaml.Controls.ItemClickEventArgs e)
         {
             var item = e.ClickedItem as DriveItemViewModel;

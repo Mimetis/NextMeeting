@@ -266,11 +266,11 @@ namespace NextMeeting.Models
             this.LastModifiedDateTime = item.LastModifiedDateTime.HasValue ? item.LastModifiedDateTime.Value.DateTime : (DateTime?)null;
             this.WebUrl = item.WebUrl;
             
-            var createdByid = item.CreatedBy?.User?.Id;
-            this.CreatedByUser = createdByid != null ? UserViewModel.GetUser(createdByid, null, null) : UserViewModel.Empty;
+            //var createdByid = item.CreatedBy?.User?.Id;
+            //this.CreatedByUser = createdByid != null ? UserViewModel.GetUser(createdByid, null) : UserViewModel.Empty;
 
-            var lastModifiedById = item.LastModifiedBy?.User?.Id;
-            this.LastModifiedByUser = lastModifiedById != null ? UserViewModel.GetUser(lastModifiedById, null, null) : UserViewModel.Empty;
+            //var lastModifiedById = item.LastModifiedBy?.User?.Id;
+            //this.LastModifiedByUser = lastModifiedById != null ? UserViewModel.GetUser(lastModifiedById, null) : UserViewModel.Empty;
 
             FileInfo fi = new FileInfo(this.Name);
              

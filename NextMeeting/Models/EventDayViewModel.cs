@@ -1,10 +1,12 @@
-﻿using Microsoft.Graph;
+﻿using NextMeeting.Graph;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NextMeeting.Models
@@ -43,19 +45,20 @@ namespace NextMeeting.Models
             }
         }
 
-        public EventDayViewModel(DateTime dateTime, int index, List<IEvent> events)
+        public EventDayViewModel(DateTime dateTime, int index, List<Microsoft.Graph.IEvent> events)
         {
             this.Index = index;
             this.Events = new ObservableCollection<EventViewModel>();
             this.DateTime = dateTime.ToLocalTime();
 
+
             for (int i = 0; i <= events.Count - 1; i++)
             {
                 var ev = events[i];
                 var evm = new EventViewModel(ev, i, index);
-
                 this.Events.Add(evm);
             }
+
 
         }
 

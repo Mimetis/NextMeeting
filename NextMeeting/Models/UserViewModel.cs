@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace NextMeeting.Models
 {
@@ -29,12 +30,19 @@ namespace NextMeeting.Models
         private ImageSource photo = ImageHelper.UnknownPersonImage;
         private Uri photoUri = ImageHelper.UnknownPersonImageUri;
         private string id;
+        private string docId;
         private string email;
+        private string workEmail;
         private string name;
         private string userPrincipalName;
+        private string department;
+        private string jobTitle;
+        private string path;
+        private ImageSource pictureUrl;
         private static Microsoft.Graph.GraphService graph = AuthenticationHelper.GetGraphService();
         private static List<UserViewModel> users = new List<UserViewModel>();
         private bool isLoadedFromGraph = false;
+        private bool isLoadedFromSharePoint = false;
         private bool isLoadedPhoto = false;
         private static UserViewModel empty;
         private string firstName;
@@ -58,7 +66,6 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(Photo));
             }
         }
-
         public Uri PhotoUri
         {
             get
@@ -83,6 +90,73 @@ namespace NextMeeting.Models
                 this.id = value;
 
                 RaisePropertyChanged(nameof(Id));
+            }
+        }
+
+        public string DocId
+        {
+            get
+            {
+                return docId;
+            }
+
+            set
+            {
+                docId = value;
+                RaisePropertyChanged(nameof(DocId));
+            }
+        }
+
+        public string Department
+        {
+            get
+            {
+                return department;
+            }
+
+            set
+            {
+                department = value;
+                RaisePropertyChanged(nameof(Department));
+            }
+        }
+        public string JobTitle
+        {
+            get
+            {
+                return jobTitle;
+            }
+
+            set
+            {
+                jobTitle = value;
+                RaisePropertyChanged(nameof(JobTitle));
+            }
+        }
+        public string Path
+        {
+            get
+            {
+                return path;
+            }
+
+            set
+            {
+                path = value;
+                RaisePropertyChanged(nameof(Path));
+            }
+        }
+        public ImageSource SPPictureUrl
+        {
+            get
+            {
+                return pictureUrl;
+            }
+
+            set
+            {
+                pictureUrl = value;
+                RaisePropertyChanged(nameof(SPPictureUrl));
             }
         }
         public string FirstName
@@ -126,6 +200,19 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(Email));
             }
         }
+        public string WorkEmail
+        {
+            get
+            {
+                return workEmail;
+            }
+            set
+            {
+                this.workEmail = value;
+
+                RaisePropertyChanged(nameof(WorkEmail));
+            }
+        }
         public string UserPrincipalName
         {
             get
@@ -135,7 +222,7 @@ namespace NextMeeting.Models
 
             set
             {
-                userPrincipalName = value;
+                userPrincipalName = value.Trim();
                 RaisePropertyChanged(nameof(UserPrincipalName));
             }
         }
@@ -160,6 +247,20 @@ namespace NextMeeting.Models
             }
 
         }
+        public bool IsLoadedFromSharePoint
+        {
+            get
+            {
+                return isLoadedFromSharePoint;
+            }
+            set
+            {
+                isLoadedFromSharePoint = value;
+
+                RaisePropertyChanged(nameof(IsLoadedFromSharePoint));
+            }
+
+        }
         public bool IsLoadedPhoto
         {
             get
@@ -177,6 +278,7 @@ namespace NextMeeting.Models
         {
             empty = new UserViewModel();
             empty.IsLoadedFromGraph = true;
+            empty.IsLoadedFromSharePoint = true;
             uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
         }
         private UserViewModel()
@@ -184,7 +286,55 @@ namespace NextMeeting.Models
             uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
         }
-        internal static async Task UpdateUsersAsync(List<UserViewModel> users, CancellationToken token)
+
+        internal static async Task UpdateUsersFromSharepointAsync(List<string> userMails, CancellationToken token)
+        {
+            var lstUsers = new List<String>();
+
+            foreach (var email in userMails)
+            {
+                var userViewModel = FindUser(email);
+                if (userViewModel != null && userViewModel.IsLoadedFromSharePoint)
+                    continue;
+
+                lstUsers.Add(email);
+            }
+
+            var mod = lstUsers.Count % 30;
+            var cpt = (lstUsers.Count / 30) + (mod > 0 ? 1 : 0);
+
+            for (int i = 0; i < cpt; i++)
+            {
+                var index = i * 30;
+                int len = 30;
+
+                if (mod > 0 && i == cpt - 1)
+                    len = mod;
+
+                var arrayUsers = lstUsers.Skip(index).Take(len).ToArray();
+                var spUsers = await SharePointSearchHelper.SPGetUsers(arrayUsers);
+
+                foreach (var u in spUsers)
+                {
+                    // mb we have a user indexed with a bad address (ie : WorkEmail indexed)
+                    if (u.UserName.ToLower() != u.WorkEmail.ToLower())
+                    {
+                        var userIndexedByWorkEmail = users.FirstOrDefault(us => us.Email == u.WorkEmail);
+
+                        if (userIndexedByWorkEmail != null)
+                        {
+                            userIndexedByWorkEmail.Email = u.UserName;
+                            userIndexedByWorkEmail.WorkEmail = u.WorkEmail;
+                            userIndexedByWorkEmail.UserPrincipalName = u.UserName;
+                        }
+                    }
+                    UserViewModel.MergeFromSharepoint(GetUser(u.UserName), u);
+
+                }
+
+            }
+        }
+        internal static async Task UpdateUsersFromGraphAsync(List<UserViewModel> users, CancellationToken token)
         {
             var usersNotUpdated = new List<UserViewModel>();
             var groups = new List<IReadOnlyQueryableSet<Microsoft.Graph.IUser>>();
@@ -195,27 +345,6 @@ namespace NextMeeting.Models
                 if (!uvm.IsLoadedFromGraph)
                     usersNotUpdated.Add(uvm);
             }
-
-            //var number = 3;
-            //for (int i = 0; i < usersNotUpdated.Count; i = i + number)
-            //{
-            //    for (var j = number - 1; j >= 0; j--)
-            //    {
-            //        if (i + j < usersNotUpdated.Count)
-            //        {
-            //            List<IReadOnlyQueryableSet<Microsoft.Graph.IUser>> tab = new List<IReadOnlyQueryableSet<Microsoft.Graph.IUser>>() ;
-            //            for (var k = 0; k <= j; k++)
-            //            {
-            //                var email = usersNotUpdated[i + k].Email;
-            //                var usersTask = from u in graph.Users
-            //                            where u.Mail == email || u.UserPrincipalName == email
-            //                            select u;
-            //                tab.Add(usersTask);
-            //            }
-            //            //groups.Add(usersTask);
-            //        }
-            //    }
-            //}
 
             for (int i = 0; i < usersNotUpdated.Count; i = i + 5)
             {
@@ -275,7 +404,7 @@ namespace NextMeeting.Models
             }
             //var po = new ParallelOptions() { CancellationToken = token, TaskScheduler = uiScheduler };
 
-            foreach( var usersTask in groups)
+            foreach (var usersTask in groups)
             {
                 if (token.IsCancellationRequested)
                     return;
@@ -305,7 +434,7 @@ namespace NextMeeting.Models
 
                 foreach (var user in allusers)
                 {
-                    UserViewModel uvm = usersNotUpdated.First(u => u.Email == user.Mail);
+                    UserViewModel uvm = usersNotUpdated.First(u => u.UserPrincipalName == user.Mail);
 
                     uvm.Name = user.DisplayName;
                     uvm.UserPrincipalName = user.UserPrincipalName;
@@ -321,9 +450,6 @@ namespace NextMeeting.Models
                     if (token.IsCancellationRequested)
                         return;
 
-                    //await uvm.UpdatePhotoAsync(token);
-
-
                 }
 
             };
@@ -335,31 +461,35 @@ namespace NextMeeting.Models
                     uvm.IsLoadedFromGraph = true;
             }
         }
-        internal static UserViewModel GetUser(string id, string email, string name)
+
+        internal static UserViewModel FindUser(string mail)
         {
+            return users.FirstOrDefault(u => u.Email == mail || u.UserPrincipalName == mail || u.WorkEmail == mail);
+        }
+
+        internal static UserViewModel GetUser(string userPrincipalName)
+        {
+            userPrincipalName = userPrincipalName.Trim();
             try
             {
-                if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(email) && string.IsNullOrEmpty(name))
+                if (string.IsNullOrEmpty(userPrincipalName))
                     return UserViewModel.Empty;
 
-                UserViewModel user = null;
-                if (!string.IsNullOrEmpty(id))
-                    user = users.FirstOrDefault(u => u.Id == id);
-                else if (!string.IsNullOrEmpty(email))
-                    user = users.FirstOrDefault(u => u.Email == email || u.UserPrincipalName == email);
-                else if (!string.IsNullOrEmpty(name))
-                    user = users.FirstOrDefault(u => u.Name == name);
+                UserViewModel user = users.FirstOrDefault(u => u.Email == userPrincipalName || u.UserPrincipalName == userPrincipalName);
+
+                //// try to find by the work email
+                //if (user == null)
+                //    user = users.FirstOrDefault(u => u.WorkEmail == userPrincipalName && !string.IsNullOrEmpty(u.UserPrincipalName));
+
 
                 if (user != null)
                     return user;
 
                 user = new UserViewModel()
                 {
-                    Id = id,
-                    Email = email,
-                    Name = name,
+                    Email = userPrincipalName,
+                    UserPrincipalName = userPrincipalName,
                     IsLoadedFromGraph = false,
-                    FirstName = String.IsNullOrEmpty(name) ? null : name.Split(' ').Length > 1 ? name.Split(' ')[0] : name,
                 };
 
                 users.Add(user);
@@ -372,59 +502,46 @@ namespace NextMeeting.Models
             }
 
         }
-        public async Task UpdateUserAsync(CancellationToken token)
+      
+
+        internal static UserViewModel MergeFromSharepoint(UserViewModel userViewModel, SPItemUser u)
         {
-            if (IsLoadedFromGraph)
-                return;
+            userViewModel.DocId = u.DocId;
+            userViewModel.Department = u.Department;
+            userViewModel.JobTitle = u.JobTitle;
+            userViewModel.Path = u.Path;
+            userViewModel.WorkEmail = u.WorkEmail;
+            if (!String.IsNullOrEmpty(u.PictureUrl))
+                userViewModel.SPPictureUrl = new BitmapImage(new Uri(u.PictureUrl));
+            else
+                userViewModel.SPPictureUrl = ImageHelper.UnknownPersonImage;
 
-            if (token.IsCancellationRequested)
-                return;
+            userViewModel.Name = u.PreferredName;
+            userViewModel.FirstName = u.FirstName;
 
-            Microsoft.Graph.IUser iuser = null;
+            if (string.IsNullOrEmpty(userViewModel.UserPrincipalName))
+                userViewModel.UserPrincipalName = u.UserName.Trim() ;
 
-            try
-            {
-                if (!String.IsNullOrEmpty(this.Id))
-                    iuser = await graph.Users.GetUserById(this.Id);
-                else
-                    iuser = await graph.Users.Where(u => u.Mail == email || u.UserPrincipalName == email).ExecuteSingleAsync();
+            userViewModel.IsLoadedFromSharePoint = true;
 
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-
-            if (iuser != null)
-            {
-                this.Name = iuser.DisplayName;
-                this.UserPrincipalName = iuser.UserPrincipalName;
-                this.Email = iuser.Mail;
-                this.Id = iuser.Id;
-                this.FirstName = iuser.GivenName;
-                if (string.IsNullOrEmpty(this.FirstName))
-                    FirstName = Name.Split(' ').Length > 1 ? Name.Split(' ')[0] : Name;
-            }
-
-
-            this.IsLoadedFromGraph = true;
-
+            return userViewModel;
         }
+
         public async Task UpdatePhotoAsync(CancellationToken token)
         {
             if (token.IsCancellationRequested)
                 return;
 
-           
+
             if (IsLoadedPhoto)
                 return;
 
-            if (String.IsNullOrEmpty(this.Id))
+            if (String.IsNullOrEmpty(this.UserPrincipalName))
                 return;
 
             var graph = AuthenticationHelper.GetGraphService();
 
-            var tuple = await graph.Me.Photo.GetPhoto(this.Id);
+            var tuple = await graph.Me.Photo.GetPhoto(this.UserPrincipalName);
 
             if (tuple != null)
             {
@@ -435,7 +552,6 @@ namespace NextMeeting.Models
 
             IsLoadedPhoto = true;
         }
-
         public RelayCommand UserCommand
         {
             get
@@ -447,7 +563,6 @@ namespace NextMeeting.Models
             }
         }
 
-       
 
         private void HandleContactClicked(UserViewModel uvm)
         {

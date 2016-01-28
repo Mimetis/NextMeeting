@@ -269,7 +269,7 @@ namespace NextMeeting.Graph
                 userAccount = await WebAuthenticationCoreManager.FindAccountAsync(aadAccountProvider, (string)userID);
 
                 // Ensure that the saved account works for getting the token we need.
-                webTokenRequestResult = await WebAuthenticationCoreManager.RequestTokenAsync(webTokenRequest, userAccount);
+                webTokenRequestResult = await WebAuthenticationCoreManager.GetTokenSilentlyAsync(webTokenRequest, userAccount);
             }
             else
             {

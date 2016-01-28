@@ -24,7 +24,7 @@
         </Grid.RowDefinitions>
 
         <AutoSuggestBox Margin="10" Grid.Row="0" PlaceholderText="Type name..."
-                        QueryIcon="Find" 
+                        QueryIcon="Find" Name="AutoSuggestBox"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
 
         <Border Name="BorderListView" Grid.Row="2" BorderThickness="0" >

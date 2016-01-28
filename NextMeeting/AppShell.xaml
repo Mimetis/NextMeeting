@@ -69,14 +69,17 @@
             </Grid.ColumnDefinitions>
              <Rectangle Fill="#FF0070C0" Grid.ColumnSpan="2" />
             <Border Grid.Row="0">
-                <ToggleButton Style="{StaticResource SymbolButton}" 
+                <ToggleButton Style="{StaticResource SymbolButton}" Background="Red"
+                              Width="40"
                               Click="HamburgerButton_Click" 
+                              HorizontalContentAlignment="Stretch"
+                              VerticalContentAlignment="Stretch"
                               VerticalAlignment="Stretch" 
                               Name="HamburgerButton"
                               Foreground="{ThemeResource ApplicationForegroundThemeBrush}">
                     <ToggleButton.Content>
                         <FontIcon x:Name="Hamburger" FontFamily="Segoe MDL2 Assets" Glyph="&#xE700;" 
-                                  Margin="0,5,0,0" Foreground="White"/>
+                                  Margin="0,0,0,0" Foreground="White"/>
                     </ToggleButton.Content>
                 </ToggleButton>
             </Border>

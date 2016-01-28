@@ -105,15 +105,7 @@ namespace NextMeeting.Views
             }
         }
  
-        private void Trending_ItemClick(object sender, Windows.UI.Xaml.Controls.ItemClickEventArgs e)
-        {
-            var item = e.ClickedItem as TrendingViewModel;
-
-            if (e == null)
-                return;
-
-            item.OpenItem.Execute(null);
-        }
+      
         private void DriveItem_ItemClick(object sender, Windows.UI.Xaml.Controls.ItemClickEventArgs e)
         {
             var item = e.ClickedItem as DriveItemViewModel;
@@ -126,7 +118,7 @@ namespace NextMeeting.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            EventAttendeesListView.WriteStats();
+            //EventAttendeesListView.WriteStats();
         }
     }
 }

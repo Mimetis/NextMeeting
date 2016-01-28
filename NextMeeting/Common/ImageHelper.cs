@@ -46,7 +46,8 @@ namespace NextMeeting.Common
 
         public static string GetDocumentType(string extension)
         {
-            switch (extension.ToLowerInvariant())
+            var ext = extension.StartsWith(".") ? extension : "." + extension;
+            switch (ext.ToLowerInvariant())
             {
                 case ".doc":
                 case ".docx":
@@ -75,7 +76,8 @@ namespace NextMeeting.Common
 
         public static Windows.UI.Color GetFileExtensionColor(string extension)
         {
-            switch (extension.ToLowerInvariant())
+            var ext = extension.StartsWith(".") ? extension : "." + extension;
+            switch (ext.ToLowerInvariant())
             {
                 case ".doc":
                 case ".docx":
@@ -103,7 +105,9 @@ namespace NextMeeting.Common
 
         public static BitmapImage GetImageExtensions(string extension)
         {
-            switch (extension.ToLowerInvariant())
+            var ext = extension.StartsWith(".") ? extension : "." + extension;
+
+            switch (ext.ToLowerInvariant())
             {
                 case ".doc":
                 case ".docx":

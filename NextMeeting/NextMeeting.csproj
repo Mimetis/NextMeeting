@@ -113,6 +113,8 @@
     <Compile Include="Converters\PivotItemConverter.cs" />
     <Compile Include="Converters\TrendingAroundConverter.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
+    <Compile Include="Graph\Request.cs" />
+    <Compile Include="Graph\SharePointSearchHelper.cs" />
     <Compile Include="Models\AttendeeViewModel.cs" />
     <Compile Include="Models\EventDayViewModel.cs" />
     <Compile Include="Models\EventViewModel.cs" />
@@ -156,9 +158,6 @@
     </Compile>
     <Compile Include="LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MainPage.xaml.cs">
-      <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="AppShell.xaml.cs">
       <DependentUpon>AppShell.xaml</DependentUpon>
@@ -224,10 +223,6 @@
     <Page Include="LoginPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="AppShell.xaml">
       <SubType>Designer</SubType>

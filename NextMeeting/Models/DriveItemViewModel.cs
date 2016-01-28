@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using NextMeeting.Extensions;
 using Windows.UI.Xaml.Media;
 using System.IO;
+using System.Diagnostics;
 
 namespace NextMeeting.Models
 {
@@ -214,35 +215,43 @@ namespace NextMeeting.Models
             }
         }
 
-        public DriveItemViewModel(IDriveItem item)
+
+        public DriveItemViewModel(SPItemDoc doc)
         {
+            this.Name = doc.Title;
+            this.Id = doc.DocId;
+            this.CreatedDateTime = doc.Created;
+            var authorDetails = doc.AuthorOWSUSER.Split('|');
+            var author = authorDetails[authorDetails.Length - 1];
+            this.CreatedByUser = UserViewModel.GetUser(author.Trim());
 
-            this.Name = item.Name;
-            this.Id = item.Id;
-            this.CreatedDateTime = item.CreatedDateTime?.DateTime;
-            this.LastModifiedDateTime = item.LastModifiedDateTime?.DateTime;
-            this.CreatedByUser = item.CreatedBy?.User?.DisplayName != null ? UserViewModel.GetUser(null, null, item.CreatedBy?.User?.DisplayName) : UserViewModel.Empty;
-            this.LastModifiedByUser = item.LastModifiedBy?.User?.DisplayName != null ? UserViewModel.GetUser(null, null, item.LastModifiedBy?.User?.DisplayName) : UserViewModel.Empty;
-            this.WebUrl = item.WebUrl;
+            var editorDetails = doc.EditorOWSUSER.Split('|');
+            if (editorDetails.Length >= 5)
+            {
+                var editor = authorDetails[editorDetails.Length - 1];
+                this.LastModifiedByUser = UserViewModel.GetUser(editor.Trim());
+                this.LastModifiedDateTime = doc.LastModifiedTime;
+            }
+            else
+            {
+                this.LastModifiedByUser = UserViewModel.Empty;
+                this.LastModifiedDateTime = null;
+            }
+            this.WebUrl = doc.LinkingUrl;
 
-            FileInfo fi = new FileInfo(this.Name);
 
+            FileInfo fi = new FileInfo(doc.Filename);
 
             this.FileExtension = fi.Extension;
             this.FileExtensionIcon = ImageHelper.GetImageExtensions(fi.Extension);
             this.FileExtensionIconColor = new SolidColorBrush(ImageHelper.GetFileExtensionColor(fi.Extension));
-
             this.FriendlyName = this.Name.Replace(this.FileExtension, "");
 
             this.FriendlyExtensionName = ImageHelper.GetDocumentType(fi.Extension);
-
-            if (this.CreatedDateTime.HasValue)
-                this.CreatedDateTime = this.CreatedDateTime.Value.ToLocalTime();
-
-            if (this.LastModifiedDateTime.HasValue)
-                this.LastModifiedDateTime = this.LastModifiedDateTime.Value.ToLocalTime();
-
         }
+
+
+   
 
         public RelayCommand OpenItem
         {

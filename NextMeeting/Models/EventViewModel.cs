@@ -39,26 +39,28 @@ namespace NextMeeting.Models
         private bool isLoadingTrendings = true;
         private bool isLoading = true;
         private bool isLoadingLastFiles = true;
+        private bool isLoadingSharedItems = true;
         private bool hasNoTrends = false;
         private bool hasNoFiles = false;
+        private bool hasNoSharedItems = false;
+        internal string organizerEmail;
+        private string organizerFriendlyName;
         private Microsoft.Graph.GraphService graph = AuthenticationHelper.GetGraphService();
-        private CacheManager<TrendingViewModel> cacheTrendings;
-        private CacheManager<DriveItemViewModel> cacheDriveItems;
+        private CacheManager<SPItemDoc> cacheTrendings;
+        private CacheManager<SPItemDoc> cacheDriveItems;
+        private CacheManager<SPItemDoc> cacheSharedItems;
         private UserViewModel organizer;
         private ObservableCollection<DriveItemViewModel> driveItems;
-        private ObservableCollection<DriveItemViewModel> topDriveItems;
-        private ObservableCollection<TrendingViewModel> trendings;
-        private ObservableCollection<TrendingViewModel> topTrendings;
+        private ObservableCollection<DriveItemViewModel> trendings;
+        private ObservableCollection<DriveItemViewModel> sharedItems;
         private TaskScheduler uiScheduler;
-        private List<Microsoft.Graph.DriveItem> internalDrivesItems;
-        private List<TrendingAroundItem> internalTrendings;
-        
+
 
         public Microsoft.Graph.ItemBody Body { get; set; }
         public String Id { get; set; }
         public string BodyPreview { get; set; }
         public String Location { get; set; }
-        public ObservableCollection<TrendingViewModel> Trendings
+        public ObservableCollection<DriveItemViewModel> Trendings
         {
             get
             {
@@ -71,17 +73,25 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(Trendings));
             }
         }
-        public ObservableCollection<TrendingViewModel> TopTrendings
+        public ObservableCollection<DriveItemViewModel> SharedItems
         {
             get
             {
-                return topTrendings;
+                return sharedItems;
             }
+
             set
             {
-                topTrendings = value;
-
-                RaisePropertyChanged(nameof(TopTrendings));
+                sharedItems = value;
+                RaisePropertyChanged(nameof(SharedItems));
+                RaisePropertyChanged(nameof(TopSharedItems));
+            }
+        }
+        public List<DriveItemViewModel> TopSharedItems
+        {
+            get
+            {
+                return this.SharedItems.Take(TOP_ITEMS_NUMBERS).ToList();
             }
         }
         public ObservableCollection<DriveItemViewModel> DriveItems
@@ -97,22 +107,8 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(DriveItems));
             }
         }
-        public ObservableCollection<DriveItemViewModel> TopDriveItems
-        {
-            get
-            {
-                return topDriveItems;
-            }
-            set
-            {
-                topDriveItems = value;
-
-                RaisePropertyChanged(nameof(TopDriveItems));
-            }
-        }
-        public ObservableCollection<AttendeeViewModel> Attendees { get; set; }
-        public ObservableCollection<SearchItemUser> TeamWork { get; set; }
-        
+         public ObservableCollection<AttendeeViewModel> Attendees { get; set; }
+        public ObservableCollection<UserViewModel> TeamWork { get; set; }
         public ObservableCollection<AttendeeViewModel> TopAttendees
         {
             get
@@ -181,6 +177,19 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(IsLoadingLastFiles));
             }
         }
+        public bool IsLoadingSharedItems
+        {
+            get
+            {
+                return isLoadingSharedItems;
+            }
+
+            set
+            {
+                isLoadingSharedItems = value;
+                RaisePropertyChanged(nameof(IsLoadingSharedItems));
+            }
+        }
         public Microsoft.Graph.IEvent InternalEvent
         {
             get
@@ -205,6 +214,9 @@ namespace NextMeeting.Models
             {
                 organizer = value;
                 RaisePropertyChanged(nameof(Organizer));
+
+                if (Organizer != null && Organizer.Name != this.OrganizerFriendlyName)
+                    this.OrganizerFriendlyName = Organizer.Name;
             }
         }
         public bool HasNoTrends
@@ -233,6 +245,19 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(HasNoFiles));
             }
         }
+        public bool HasNoSharedItems
+        {
+            get
+            {
+                return hasNoSharedItems;
+            }
+
+            set
+            {
+                hasNoSharedItems = value;
+                RaisePropertyChanged(nameof(HasNoSharedItems));
+            }
+        }
         public bool IsLoading
         {
             get
@@ -246,66 +271,55 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(IsLoading));
             }
         }
+        public string OrganizerFriendlyName
+        {
+            get
+            {
+                return organizerFriendlyName;
+            }
 
+            set
+            {
+                organizerFriendlyName = value;
+                RaisePropertyChanged(nameof(OrganizerFriendlyName));
+            }
+        }
         public EventViewModel(Microsoft.Graph.IEvent ev, int index, int groupIndex)
         {
             this.IsLoading = true;
             uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             this.index = index;
             this.groupIndex = groupIndex;
-           
-            this.Organizer = UserViewModel.GetUser(null, ev.Organizer.EmailAddress.Address, ev.Organizer.EmailAddress.Name);
+            this.Id = ev.Id;
+
+            this.organizerEmail = ev.Organizer.EmailAddress.Address;
+
+            // Temporary Organizer name.
+            this.OrganizerFriendlyName = ev.Organizer.EmailAddress.Name;
 
             // get trendings from cache manager
-            this.cacheTrendings = CacheManager<TrendingViewModel>.Get(ev.Organizer.EmailAddress.Address);
-
+            this.cacheTrendings = CacheManager<SPItemDoc>.Get(this.Id + "_trends");
             // get files from cache manager
-            this.cacheDriveItems = CacheManager<DriveItemViewModel>.Get(ev.Organizer.EmailAddress.Address);
+            this.cacheDriveItems = CacheManager<SPItemDoc>.Get(this.Id + "_files");
+            // get files from cache manager
+            this.cacheSharedItems = CacheManager<SPItemDoc>.Get(this.Id + "_shared");
 
             this.FillItem(ev);
 
             this.IsLoading = false;
 
         }
-
-        public async Task Refresh(CancellationToken token, bool forceRefresh = false)
-        {
-            this.IsLoading = true;
-            this.IsLoadingLastFiles = true;
-            this.IsLoadingTrendings = true;
-
-            if (forceRefresh)
-            {
-                var ievent = await graph.Me.Events.GetEventById(this.Id);
-                this.FillItem(ievent);
-            }
-            this.IsLoading = false;
-
-            // Load trendings and files
-            var t1 = this.LoadTrendingAndFilesAsync(forceRefresh, token)
-                .ContinueWith(async tmp => await this.UpdateTrendingsAsync(forceRefresh, token), token, TaskContinuationOptions.OnlyOnRanToCompletion, uiScheduler);
-
-            var t2 = this.UpdateAttendeesAsync(token);
-
-            var t3 = this.UpdateWorkTeamAsync(token);
-
-            await Task.WhenAll(new[] { t1, t2, t3 });
-
-        }
-
         private void FillItem(Microsoft.Graph.IEvent ev)
         {
-            this.Id = ev.Id;
             this.DriveItems = new ObservableCollection<DriveItemViewModel>();
-            this.Trendings = new ObservableCollection<TrendingViewModel>();
-            this.TopDriveItems = new ObservableCollection<DriveItemViewModel>();
-            this.TopTrendings = new ObservableCollection<TrendingViewModel>();
+            this.Trendings = new ObservableCollection<DriveItemViewModel>();
+            this.SharedItems = new ObservableCollection<DriveItemViewModel>();
             this.InternalEvent = ev;
             this.Subject = ev.Subject;
             this.StartingDate = DateTime.Parse(ev.Start.DateTime).ToLocalTime();
             this.EndingDate = DateTime.Parse(ev.End.DateTime).ToLocalTime();
             this.Attendees = new ObservableCollection<AttendeeViewModel>();
-            this.TeamWork = new ObservableCollection<SearchItemUser>();
+            this.TeamWork = new ObservableCollection<UserViewModel>();
             this.Location = ev.Location.DisplayName;
             this.BodyPreview = ev.BodyPreview;
             this.Body = ev.Body;
@@ -314,120 +328,114 @@ namespace NextMeeting.Models
                 this.Attendees.Add(new AttendeeViewModel(a));
 
         }
-
-        // What to update for all other templates in NextMeetings view
-        public async Task UpdateMeetingItemAsync(CancellationToken token)
+        public async Task Refresh(CancellationToken token, bool forceRefresh = false)
         {
+            this.IsLoading = true;
+            this.IsLoadingLastFiles = true;
+            this.IsLoadingTrendings = true;
+            this.IsLoadingSharedItems = true;
 
-            // Update organizer
-            await this.Organizer.UpdateUserAsync(token);
+            if (forceRefresh)
+            {
+                var ievent = await graph.Me.Events.GetEventById(this.Id);
+                this.FillItem(ievent);
+            }
+            this.IsLoading = false;
 
-            // Update Photo
-            await this.Organizer.UpdatePhotoAsync(token);
+            //Need to find the organizer before trying to get trends and files
+            this.UpdateOrganizerUser();
 
+            // Load files, trendings, work team
+            var filesTask = this.LoadFilesAsync(forceRefresh, token);
+            var trendsTask = this.LoadTrendingsAsync(forceRefresh, token);
+            var teamTask = this.LoadWorkTeamAsync(forceRefresh, token);
+            var sharedItemsTask = this.LoadSharedItemsAsync(forceRefresh, token);
+
+            await Task.WhenAll(new[] { filesTask, trendsTask, teamTask, sharedItemsTask });
+
+            await this.UpdateUsers(false, token);
         }
-
-        private async Task InternalUpdateFirstMeeting(bool forceRefresh, CancellationToken token)
+        private async Task UpdateUsers(bool onlyTopAttendees, CancellationToken token)
         {
-            await this.Organizer.UpdateUserAsync(token);
-            await this.Organizer.UpdatePhotoAsync(token);
-            await this.LoadTrendingAndFilesAsync(forceRefresh, token);
-            await this.UpdateTopTrendingsAsync(forceRefresh, token);
+            var usersMail = new List<string>();
 
+            // Add organizer
+            usersMail.Add(this.organizerEmail);
+
+            // Add attendees
+            usersMail.AddRange(onlyTopAttendees ? this.TopAttendees.Select(a => a.Email) : this.Attendees.Select(a => a.Email));
+
+            // No need to add teamworks
+            // usersMail.AddRange(this.TeamWork)
+
+            // Add Last Files viewed items
+            usersMail.AddRange(this.DriveItems.Select(d => d.CreatedByUser.UserPrincipalName));
+            usersMail.AddRange(this.DriveItems.Select(d => d.LastModifiedByUser.UserPrincipalName));
+
+            // Add Trending items
+            usersMail.AddRange(this.Trendings.Select(d => d.CreatedByUser.UserPrincipalName));
+            usersMail.AddRange(this.Trendings.Select(d => d.LastModifiedByUser.UserPrincipalName));
+
+            // distinct them
+            var distinctUsers = usersMail.Distinct().Where(mail => !string.IsNullOrEmpty(mail)).ToList();
+
+             // update them
+            await UserViewModel.UpdateUsersFromSharepointAsync(distinctUsers, token);
         }
-        // What to update for first template in NextMeetings view
         public async Task UpdateFirstMeetingItemAsync(bool forceRefresh, CancellationToken token)
         {
-            //var o1 = Task.Factory.StartNew(async () =>
-            //{
-            //    await this.Organizer.UpdateUserAsync(token);
-            //    await this.Organizer.UpdatePhotoAsync(token);
-            //    await this.LoadTrendingAndFilesAsync(forceRefresh, token);
-            //    await this.UpdateTopTrendingsAsync(forceRefresh, token);
+            if (token.IsCancellationRequested)
+                return;
 
-            //}, token, TaskCreationOptions.None, uiScheduler);
+            this.UpdateOrganizerUser();
 
-            Task o1 = InternalUpdateFirstMeeting(forceRefresh, token);
+            // Load files and trendings
+            await this.LoadSharedItemsAsync(forceRefresh, token);
 
-            
-            //// Update organizer then Photo
-            //var o1 = this.Organizer.UpdateUser()
-            //    .ContinueWith(async (tmp) => await this.Organizer.UpdatePhoto(), uiScheduler)
-            //    .ContinueWith(async (tmp) => await this.LoadTrendingAndFiles(CancellationToken.None), uiScheduler)
-            //    .ContinueWith(async (tmp) => await this.UpdateTopTrendings(CancellationToken.None), uiScheduler);
+            if (token.IsCancellationRequested)
+                return;
 
-            // Update attendees
-            var a1 = this.UpdateTopAttendeesAsync(token);
-
-            try
-            {
-                // await first steps
-                await Task.WhenAll(new[] { o1, a1 });
-
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-                throw;
-            }
+            await this.UpdateUsers(true, token);
 
             // Send tile to start screen tile
             TileHelper.Current.SendEventTileNotification(this);
         }
-        private async Task InternalUpdateAttendeesAsync(CancellationToken token, IEnumerable<AttendeeViewModel> attendees)
+        public void UpdateOrganizerUser()
         {
-            if (token.IsCancellationRequested)
-                return;
+            var user = UserViewModel.FindUser(this.organizerEmail);
 
-            var users = attendees.Select(a => a.User).ToList();
-
-            if (users == null || users.Count <= 0)
-                return;
+            if (user != null)
+                this.Organizer = user;
+        }
+        private void UpdateAttendees(IEnumerable<AttendeeViewModel> attendees)
+        {
 
             // batch update
-            await UserViewModel.UpdateUsersAsync(users, token);
-
+            foreach (var attendee in attendees)
+            {
+                var user = UserViewModel.FindUser(attendee.Email);
+                if (user != null)
+                    attendee.User = user;
+            }
         }
-        private async Task UpdateWorkTeamAsync(CancellationToken token)
+        private async Task LoadWorkTeamAsync(bool forceRefresh, CancellationToken token)
         {
             if (token.IsCancellationRequested)
                 return;
+
             this.TeamWork.Clear();
 
-            var uri = GraphExtensions.GetManagerByUserUri("ME");
-
-            var uri2 = "search/query?Querytext=%27*%27&Properties=%27GraphQuery:ACTOR(ME\\,action\\:1015)%27&SourceId=%27b09a7990-05ea-4af9-81ef-edfab16c4e31%27&SelectProperties=%27UserName,DocId%27&RowLimit=36";
-
-            var users =await GraphExtensions.SearchUsersAsync(uri2);
-
-            foreach(var u in users)
-            {
-                this.TeamWork.Add(u);
-            }
-
-        }
-
-        public async Task UpdateTopAttendeesAsync(CancellationToken token)
-        {
-            await InternalUpdateAttendeesAsync(token, this.TopAttendees);
-        }
-        public async Task UpdateAttendeesAsync(CancellationToken token)
-        {
-            await InternalUpdateAttendeesAsync(token, this.Attendees);
-        }
-
-
-
-        public async Task LoadTrendingAndFilesAsync(bool forceRefresh, CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
+            if (this.Organizer == null || String.IsNullOrEmpty(this.Organizer.DocId))
                 return;
 
-            // Load files and trendings
-            var files = this.LoadFilesAsync(forceRefresh, token);
-            var trends = this.LoadTrendingsAsync(forceRefresh, token);
+            var teamWork = await SharePointSearchHelper.SPGetWorkingWithUsers(this.Organizer.DocId);
 
-            await Task.WhenAll(new[] { files, trends });
+            List<UserViewModel> users = new List<UserViewModel>();
+            foreach (var u in teamWork)
+            {
+                UserViewModel uvm = UserViewModel.MergeFromSharepoint(UserViewModel.GetUser(u.UserName), u);
+                this.TeamWork.Add(uvm);
+            }
 
         }
         private async Task LoadFilesAsync(bool forceRefresh, CancellationToken token)
@@ -439,14 +447,15 @@ namespace NextMeeting.Models
             this.HasNoFiles = false;
 
             this.DriveItems.Clear();
-            this.TopDriveItems.Clear();
+  
+            if (this.Organizer == null || String.IsNullOrEmpty(this.Organizer.DocId))
+            {
+                this.IsLoadingLastFiles = false;
+                return;
+            }
 
-            if (internalDrivesItems == null || internalDrivesItems.Count == 0 || forceRefresh)
-                internalDrivesItems = await graph.Me.GetLastDriveItems(this.Organizer.Id);
-
-            this.HasNoFiles = internalDrivesItems == null || internalDrivesItems.Count == 0;
-
-            var orderLastFiles = internalDrivesItems.OrderByDescending(t => t.LastModifiedDateTime).ToList();
+            if (forceRefresh)
+                this.cacheDriveItems.Clear();
 
             if (token.IsCancellationRequested)
             {
@@ -454,18 +463,24 @@ namespace NextMeeting.Models
                 return;
             }
 
-            foreach (var item in orderLastFiles)
+            if (this.cacheDriveItems.Values.Count == 0)
             {
-                if (!this.cacheDriveItems.Values.Any(t => t.Id == item.Id))
-                    this.cacheDriveItems.Values.Add(new DriveItemViewModel(item));
+                var internalDrivesItems = await SharePointSearchHelper.SPGetLastModifiedByOrViewByUser(this.Organizer.DocId);
 
-                var itemFromCache = this.cacheDriveItems.Values.First(dvm => dvm.Id == item.Id);
-
-                this.DriveItems.Add(itemFromCache);
-
-                if (orderLastFiles.IndexOf(item) < TOP_ITEMS_NUMBERS)
-                    this.TopDriveItems.Add(itemFromCache);
+                foreach (var item in internalDrivesItems)
+                {
+                    if (!this.cacheDriveItems.Values.Any(t => t.DocId == item.DocId))
+                        this.cacheDriveItems.Values.Add(item);
+                }
             }
+
+
+            this.HasNoFiles = this.cacheDriveItems.Values.Count == 0;
+
+            var orderLastFiles = this.cacheDriveItems.Values.OrderByDescending(t => t.LastModifiedTime).ToList();
+
+            foreach (var item in orderLastFiles)
+                this.DriveItems.Add(new DriveItemViewModel(item));
             this.IsLoadingLastFiles = false;
 
         }
@@ -477,17 +492,16 @@ namespace NextMeeting.Models
             this.IsLoadingTrendings = true;
             this.HasNoTrends = false;
 
-            Debug.WriteLine("Clear Trendings and TopTrendings");
-
             this.Trendings.Clear();
-            this.TopTrendings.Clear();
 
-            if (internalTrendings == null || internalTrendings.Count == 0 || forceRefresh)
-                internalTrendings = await graph.Me.GetUserTrendingAround(this.Organizer.Id);
+            if (this.Organizer == null || String.IsNullOrEmpty(this.Organizer.DocId))
+            {
+                this.IsLoadingTrendings = false;
+                return;
+            }
 
-            this.HasNoTrends = internalTrendings == null || internalTrendings.Count == 0;
-
-            var orderedTrendings = internalTrendings.OrderByDescending(t => t.DateTimeLastModified).ToList();
+            if (forceRefresh)
+                this.cacheTrendings.Clear();
 
             if (token.IsCancellationRequested)
             {
@@ -495,99 +509,75 @@ namespace NextMeeting.Models
                 return;
             }
 
-            foreach (var item in orderedTrendings)
+            if (this.cacheTrendings.Values.Count == 0)
             {
-                if (!this.cacheTrendings.Values.Any(t => t.Id == item.Id))
-                    this.cacheTrendings.Values.Add(new TrendingViewModel(item));
+                var internalTrendingsItems = await SharePointSearchHelper.SPGetTrendingsAroundByUser(this.Organizer.DocId);
 
-                var itemFromCache = this.cacheTrendings.Values.First(dvm => dvm.Id == item.Id);
-                Debug.WriteLine("Add item to Trendings");
-                this.Trendings.Add(itemFromCache);
-
-                if (orderedTrendings.IndexOf(item) < TOP_ITEMS_NUMBERS)
+                foreach (var item in internalTrendingsItems)
                 {
-                    Debug.WriteLine("Add item to TopTrendings");
-                    this.TopTrendings.Add(itemFromCache);
+                    if (!this.cacheTrendings.Values.Any(t => t.DocId == item.DocId))
+                        this.cacheTrendings.Values.Add(item);
                 }
             }
+
+
+            this.HasNoTrends = this.cacheTrendings.Values.Count == 0;
+
+            var orderedTrendings = this.cacheTrendings.Values.OrderByDescending(t => t.LastModifiedTime).ToList();
+
+            foreach (var item in orderedTrendings)
+                this.Trendings.Add(new DriveItemViewModel(item));
+
             this.IsLoadingTrendings = false;
 
         }
-        public async Task UpdateTopTrendingsAsync(bool forceRefresh, CancellationToken token)
-        {
-            Debug.WriteLine("UpdateTopTrendingsAsync");
-            await InternalUpdateTrendingsAsync(this.TopTrendings, forceRefresh, token);
-        }
-        public async Task UpdateTrendingsAsync(bool forceRefresh, CancellationToken token)
-        {
-            Debug.WriteLine("UpdateTrendingsAsync");
-            await InternalUpdateTrendingsAsync(this.Trendings, forceRefresh, token);
-        }
-        private async Task InternalUpdateTrendingsAsync(IEnumerable<TrendingViewModel> trendings, bool forceRefresh, CancellationToken token)
+        private async Task LoadSharedItemsAsync(bool forceRefresh, CancellationToken token)
         {
             if (token.IsCancellationRequested)
                 return;
 
-            // Clone list to avoid collection modified behavior
-            var trendingsClone = trendings.Select(t => t).ToList();
+            this.IsLoadingSharedItems = true;
+            this.HasNoSharedItems = false;
 
-            foreach (var trend in trendingsClone)
+            this.SharedItems.Clear();
+
+            if (this.Organizer == null || String.IsNullOrEmpty(this.Organizer.DocId))
             {
-
-                if (token.IsCancellationRequested)
-                    return;
-
-                // Already loaded
-                if (trend.Odata_id == null && !forceRefresh)
-                    continue;
-
-                // Already updated
-                if (trend.CreatedByUser != UserViewModel.Empty && !forceRefresh)
-                    continue;
-
-                var dsq = graph.Context.CreateQuery<Microsoft.Graph.DriveItem>(trend.Odata_id);
-                try
-                {
-                    var items = await graph.Context.ExecuteAsync<Microsoft.Graph.DriveItem, Microsoft.Graph.IDriveItem>(dsq);
-
-                    if (token.IsCancellationRequested)
-                        return;
-
-
-                    if (items.CurrentPage.Count > 0)
-                    {
-                        var item = items.CurrentPage[0];
-
-                        var itemb = this.Trendings.FirstOrDefault(i => i.Id == item.Id);
-
-                        if (itemb != null)
-                        {
-                            itemb.Update(item);
-
-                            var user = UserViewModel.GetUser(item.CreatedBy.User.Id, null, null);
-                            await user.UpdateUserAsync(token);
-                            //await user.UpdatePhotoAsync(token);
-
-                            if (token.IsCancellationRequested)
-                                return;
-
-                            var user2 = UserViewModel.GetUser(item.LastModifiedBy.User.Id, null, null);
-                            await user2.UpdateUserAsync(token);
-                            //await user2.UpdatePhotoAsync(token);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                }
-
-                if (token.IsCancellationRequested)
-                    return;
-
+                this.IsLoadingSharedItems = false;
+                return;
             }
-        }
 
+            if (forceRefresh)
+                this.cacheSharedItems.Clear();
+
+            if (token.IsCancellationRequested)
+            {
+                this.IsLoadingSharedItems = false;
+                return;
+            }
+
+            if (this.cacheSharedItems.Values.Count == 0)
+            {
+                var internalItems = await SharePointSearchHelper.SPGetSharedFilesBeetweenUserAndMe(this.Organizer.DocId);
+
+                foreach (var item in internalItems)
+                {
+                    if (!this.cacheSharedItems.Values.Any(t => t.DocId == item.DocId))
+                        this.cacheSharedItems.Values.Add(item);
+                }
+            }
+
+
+            this.HasNoSharedItems = this.cacheSharedItems.Values.Count == 0;
+
+            var orderedItems = this.cacheSharedItems.Values.OrderByDescending(t => t.LastModifiedTime).ToList();
+
+            foreach (var item in orderedItems)
+                this.SharedItems.Add(new DriveItemViewModel(item));
+
+            this.IsLoadingSharedItems = false;
+
+        }
 
     }
 }
