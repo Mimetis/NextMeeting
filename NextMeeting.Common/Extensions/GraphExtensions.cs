@@ -12,10 +12,9 @@ using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Storage;
 using System.Diagnostics;
-using NextMeeting.Common;
-using NextMeeting.Models;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
+using NextMeeting.Common;
 
 namespace NextMeeting.Graph
 {
@@ -144,47 +143,47 @@ namespace NextMeeting.Graph
             return items;
         }
 
-        public async static System.Threading.Tasks.Task<List<TrendingAroundItem>> GetUserTrendingAround(
-            this IUserFetcher userFetcher, string id)
-        {
-            List<TrendingAroundItem> items = new List<TrendingAroundItem>();
+        //public async static System.Threading.Tasks.Task<List<TrendingAroundItem>> GetUserTrendingAround(
+        //    this IUserFetcher userFetcher, string id)
+        //{
+        //    List<TrendingAroundItem> items = new List<TrendingAroundItem>();
 
-            using (HttpClient client = new HttpClient())
-            {
+        //    using (HttpClient client = new HttpClient())
+        //    {
 
-                var token = await AuthenticationHelper.GetTokenHelperAsync();
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+        //        var token = await AuthenticationHelper.GetTokenHelperAsync();
+        //        client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
 
-                // Endpoint for the current user's events
-                Uri usersEndpoint = new Uri(AuthenticationHelper.GraphEndpointId + "users/" + id + "/TrendingAround");
+        //        // Endpoint for the current user's events
+        //        Uri usersEndpoint = new Uri(AuthenticationHelper.GraphEndpointId + "users/" + id + "/TrendingAround");
 
-                using (HttpResponseMessage response = await client.GetAsync(usersEndpoint))
-                {
+        //        using (HttpResponseMessage response = await client.GetAsync(usersEndpoint))
+        //        {
 
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string responseContent = await response.Content.ReadAsStringAsync();
+        //            if (response.IsSuccessStatusCode)
+        //            {
+        //                string responseContent = await response.Content.ReadAsStringAsync();
 
-                        var jResult = JObject.Parse(responseContent);
+        //                var jResult = JObject.Parse(responseContent);
 
-                        foreach (JObject calendarEvent in jResult["value"])
-                        {
-                            var driveItem = calendarEvent.ToObject<TrendingAroundItem>();
+        //                foreach (JObject calendarEvent in jResult["value"])
+        //                {
+        //                    var driveItem = calendarEvent.ToObject<TrendingAroundItem>();
 
-                            // hack to get odata.id
-                            var odataId = calendarEvent["@odata.id"];
-                            driveItem.Odata_id = odataId.ToString();
+        //                    // hack to get odata.id
+        //                    var odataId = calendarEvent["@odata.id"];
+        //                    driveItem.Odata_id = odataId.ToString();
 
-                            items.Add(driveItem);
-                        }
+        //                    items.Add(driveItem);
+        //                }
 
-                    }
-                }
-            }
+        //            }
+        //        }
+        //    }
 
-            return items;
-        }
+        //    return items;
+        //}
 
 
         public async static System.Threading.Tasks.Task<IUser> GetUserById(

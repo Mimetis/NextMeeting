@@ -43,6 +43,7 @@ namespace NextMeeting.Models
         private bool hasNoTrends = false;
         private bool hasNoFiles = false;
         private bool hasNoSharedItems = false;
+        private bool? isAllDay = false;
         internal string organizerEmail;
         private string organizerFriendlyName;
         private Microsoft.Graph.GraphService graph = AuthenticationHelper.GetGraphService();
@@ -53,12 +54,15 @@ namespace NextMeeting.Models
         private ObservableCollection<DriveItemViewModel> driveItems;
         private ObservableCollection<DriveItemViewModel> trendings;
         private ObservableCollection<DriveItemViewModel> sharedItems;
+        private ObservableCollection<DriveItemViewModel> topSharedItems;
         private TaskScheduler uiScheduler;
 
 
         public Microsoft.Graph.ItemBody Body { get; set; }
         public String Id { get; set; }
         public string BodyPreview { get; set; }
+        public bool IsBodyEmpty { get; set; }
+        public bool IsLocationUndefined { get; set; }
         public String Location { get; set; }
         public ObservableCollection<DriveItemViewModel> Trendings
         {
@@ -87,11 +91,16 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(TopSharedItems));
             }
         }
-        public List<DriveItemViewModel> TopSharedItems
+        public ObservableCollection<DriveItemViewModel> TopSharedItems
         {
             get
             {
-                return this.SharedItems.Take(TOP_ITEMS_NUMBERS).ToList();
+                return topSharedItems;
+            }
+            set
+            {
+                topSharedItems = value;
+                RaisePropertyChanged(nameof(TopSharedItems));
             }
         }
         public ObservableCollection<DriveItemViewModel> DriveItems
@@ -107,7 +116,7 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(DriveItems));
             }
         }
-         public ObservableCollection<AttendeeViewModel> Attendees { get; set; }
+        public ObservableCollection<AttendeeViewModel> Attendees { get; set; }
         public ObservableCollection<UserViewModel> TeamWork { get; set; }
         public ObservableCollection<AttendeeViewModel> TopAttendees
         {
@@ -130,6 +139,9 @@ namespace NextMeeting.Models
         {
             get
             {
+                if (this.IsAllDay.HasValue && this.IsAllDay.Value)
+                    return "All day event";
+
                 return this.StartingHourDate + "-" + this.EndingHourDate;
             }
         }
@@ -284,6 +296,20 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(OrganizerFriendlyName));
             }
         }
+        public bool? IsAllDay
+        {
+            get
+            {
+                return isAllDay;
+            }
+
+            set
+            {
+                isAllDay = value;
+                RaisePropertyChanged(nameof(IsAllDay));
+            }
+        }
+
         public EventViewModel(Microsoft.Graph.IEvent ev, int index, int groupIndex)
         {
             this.IsLoading = true;
@@ -291,6 +317,7 @@ namespace NextMeeting.Models
             this.index = index;
             this.groupIndex = groupIndex;
             this.Id = ev.Id;
+            this.IsAllDay = ev.IsAllDay;
 
             this.organizerEmail = ev.Organizer.EmailAddress.Address;
 
@@ -314,6 +341,7 @@ namespace NextMeeting.Models
             this.DriveItems = new ObservableCollection<DriveItemViewModel>();
             this.Trendings = new ObservableCollection<DriveItemViewModel>();
             this.SharedItems = new ObservableCollection<DriveItemViewModel>();
+            this.TopSharedItems = new ObservableCollection<DriveItemViewModel>();
             this.InternalEvent = ev;
             this.Subject = ev.Subject;
             this.StartingDate = DateTime.Parse(ev.Start.DateTime).ToLocalTime();
@@ -321,7 +349,9 @@ namespace NextMeeting.Models
             this.Attendees = new ObservableCollection<AttendeeViewModel>();
             this.TeamWork = new ObservableCollection<UserViewModel>();
             this.Location = ev.Location.DisplayName;
+            this.IsLocationUndefined = String.IsNullOrWhiteSpace(ev.Location.DisplayName);
             this.BodyPreview = ev.BodyPreview;
+            this.IsBodyEmpty = String.IsNullOrWhiteSpace(ev.BodyPreview);
             this.Body = ev.Body;
             // Adding Attendees
             foreach (var a in ev.Attendees.ToList())
@@ -379,7 +409,7 @@ namespace NextMeeting.Models
             // distinct them
             var distinctUsers = usersMail.Distinct().Where(mail => !string.IsNullOrEmpty(mail)).ToList();
 
-             // update them
+            // update them
             await UserViewModel.UpdateUsersFromSharepointAsync(distinctUsers, token);
         }
         public async Task UpdateFirstMeetingItemAsync(bool forceRefresh, CancellationToken token)
@@ -389,16 +419,22 @@ namespace NextMeeting.Models
 
             this.UpdateOrganizerUser();
 
-            // Load files and trendings
-            await this.LoadSharedItemsAsync(forceRefresh, token);
+            var loadShareItemsTask = this.LoadSharedItemsAsync(forceRefresh, token);
 
-            if (token.IsCancellationRequested)
-                return;
+            Func<CancellationToken, Task> updateUsersAsync = async (bToken) =>
+            {
+                await this.UpdateUsers(true, bToken);
 
-            await this.UpdateUsers(true, token);
+                //update TopAttendees since they dont have User set
+                foreach (var att in this.TopAttendees)
+                    att.User = UserViewModel.FindUser(att.Email);
+            };
+            var updateUsersTask = updateUsersAsync(token);
 
-            // Send tile to start screen tile
-            TileHelper.Current.SendEventTileNotification(this);
+
+            await Task.WhenAll(new [] { loadShareItemsTask, updateUsersTask });
+
+            await TaskHelper.Current.SendNotification();
         }
         public void UpdateOrganizerUser()
         {
@@ -447,7 +483,7 @@ namespace NextMeeting.Models
             this.HasNoFiles = false;
 
             this.DriveItems.Clear();
-  
+
             if (this.Organizer == null || String.IsNullOrEmpty(this.Organizer.DocId))
             {
                 this.IsLoadingLastFiles = false;
@@ -540,6 +576,7 @@ namespace NextMeeting.Models
             this.HasNoSharedItems = false;
 
             this.SharedItems.Clear();
+            this.TopSharedItems.Clear();
 
             if (this.Organizer == null || String.IsNullOrEmpty(this.Organizer.DocId))
             {
@@ -573,7 +610,13 @@ namespace NextMeeting.Models
             var orderedItems = this.cacheSharedItems.Values.OrderByDescending(t => t.LastModifiedTime).ToList();
 
             foreach (var item in orderedItems)
-                this.SharedItems.Add(new DriveItemViewModel(item));
+            {
+                var divm = new DriveItemViewModel(item);
+                this.SharedItems.Add(divm);
+
+                if (orderedItems.IndexOf(item) < TOP_ITEMS_NUMBERS)
+                    this.TopSharedItems.Add(divm);
+            }
 
             this.IsLoadingSharedItems = false;
 

@@ -80,6 +80,8 @@ namespace NextMeeting.Views
                 {
                     this.IsRefreshButtonEnabled = false;
                     await Refresh(this.TokenSource.Token, false);
+
+                    await TaskHelper.Current.RegisterTileBackgroundTask();
                 }
                 catch (OperationCanceledException ex)
                 {
@@ -152,8 +154,9 @@ namespace NextMeeting.Views
             var calenderViewQuery = this.Graph.Me.CalendarView;
             var dsq = (DataServiceQuery<Microsoft.Graph.Event>)calenderViewQuery.Query;
 
-            var start = DateTime.UtcNow.ToString("o");
-            var end = DateTime.UtcNow.AddDays(7).ToString("o");
+            // Dont start with UtcNow to not go on yesterday
+            var start = DateTime.UtcNow.Date.ToString("o");
+            var end = DateTime.UtcNow.Date.AddDays(7).ToString("o");
 
             dsq = dsq.AddQueryOption("startDateTime", start);
             dsq = dsq.AddQueryOption("endDateTime", end);
@@ -177,14 +180,30 @@ namespace NextMeeting.Views
 
                 if (allEvents != null)
                 {
-                    var gEvents = allEvents.GroupBy(ev => DateTime.Parse(ev.Start.DateTime).Date).ToList();
+
+                    // some events could start yesterday and finish today
+                    allEvents = allEvents.Where(ev => DateTime.Parse(ev.Start.DateTime).ToLocalTime() > DateTime.Now.ToLocalTime()).ToList();
+                    // ordering all events
+                    var gEvents = allEvents.GroupBy(ev => DateTime.Parse(ev.Start.DateTime).ToLocalTime().Date).ToList();
+                    // get day events
                     var gEventsOrdered = gEvents.OrderBy(g => g.Key).ToList();
 
                     for (int i = 0; i <= gEventsOrdered.Count - 1; i++)
                     {
                         var evg = gEventsOrdered[i];
                         var key = evg.Key;
-                        var lst = evg.ToList().OrderBy(ev => ev.Start.DateTime).ToList();
+                        // ordering all events in each group
+                        List<Microsoft.Graph.IEvent> lst;
+
+                        if (i == 0)
+                        {
+                            // for the first group never add the "all day events" in first
+                            lst = evg.OrderBy(ev => DateTime.Parse(ev.Start.DateTime).ToLocalTime()).OrderBy(ev => ev.IsAllDay).ToList();
+                        }
+                        else
+                        {
+                            lst = evg.OrderBy(ev => DateTime.Parse(ev.Start.DateTime).ToLocalTime()).ToList();
+                        }
 
                         if (!cacheEventDays.Values.Any(temp => temp.DateTime == evg.Key.ToLocalTime()))
                             cacheEventDays.Values.Add(new EventDayViewModel(evg.Key, i, lst));
@@ -245,7 +264,7 @@ namespace NextMeeting.Views
                     foreach (var ev in this.Events)
                         foreach (var evm in ev.Events)
                             if (evm.ReferenceIndex == "0_0")
-                                await evm.UpdateFirstMeetingItemAsync(forceRefresh, token);
+                                evm.UpdateFirstMeetingItemAsync(forceRefresh, token);
                             else
                                 evm.UpdateOrganizerUser();
 

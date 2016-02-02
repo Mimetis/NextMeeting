@@ -17,7 +17,11 @@
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>NextMeeting_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>NextMeeting_StoreKey.pfx</PackageCertificateKeyFile>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
+    <PackageCertificateThumbprint>BC56BA7D4DFCC69EA8D17A8ADF45C77BAEF047DD</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -95,11 +99,10 @@
     <Compile Include="Common\IRefreshPage.cs" />
     <Compile Include="Common\NavigationHelper.cs" />
     <Compile Include="Common\RelayCommand.cs" />
-    <Compile Include="Common\TileHelper.cs" />
+    <Compile Include="Common\TaskHelper.cs" />
     <Compile Include="Controls\BodyEventControl.xaml.cs">
       <DependentUpon>BodyEventControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\ImageHelper.cs" />
     <Compile Include="Common\NavLink.cs" />
     <Compile Include="Controls\PivotItemHeaderControl.xaml.cs">
       <DependentUpon>PivotItemHeaderControl.xaml</DependentUpon>
@@ -112,15 +115,11 @@
     <Compile Include="Converters\DebugConverter.cs" />
     <Compile Include="Converters\PivotItemConverter.cs" />
     <Compile Include="Converters\TrendingAroundConverter.cs" />
-    <Compile Include="Extensions\DateTimeExtensions.cs" />
-    <Compile Include="Graph\Request.cs" />
-    <Compile Include="Graph\SharePointSearchHelper.cs" />
     <Compile Include="Models\AttendeeViewModel.cs" />
     <Compile Include="Models\EventDayViewModel.cs" />
     <Compile Include="Models\EventViewModel.cs" />
     <Compile Include="Models\DriveItemViewModel.cs" />
     <Compile Include="Models\ProfileViewModel.cs" />
-    <Compile Include="Models\SearchItem.cs" />
     <Compile Include="Models\TrendingAroundItem.cs" />
     <Compile Include="Models\TrendingViewModel.cs" />
     <Compile Include="Models\CacheManager.cs" />
@@ -137,9 +136,6 @@
     <Compile Include="Views\NextMeetings.xaml.cs">
       <DependentUpon>NextMeetings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Graph\AuthenticationHelper.cs" />
-    <Compile Include="Extensions\GraphExtensions.cs" />
-    <Compile Include="Graph\Microsoft.Graph.cs" />
     <Compile Include="Views\ProfileDetails.xaml.cs">
       <DependentUpon>ProfileDetails.xaml</DependentUpon>
     </Compile>
@@ -149,6 +145,7 @@
     <Compile Include="Views\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
+    <None Include="NextMeeting_StoreKey.pfx" />
     <None Include="project.json" />
     <None Include="Service References\Office365\ConnectedService.json" />
   </ItemGroup>
@@ -194,6 +191,7 @@
     <Content Include="Assets\Square310x310Logo.scale-200.png" />
     <Content Include="Assets\Square71x71Logo.scale-200.png" />
     <Content Include="Assets\UnknownPerson.jpg" />
+    <None Include="Package.StoreAssociation.xml" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -265,6 +263,16 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NextMeeting.Common\NextMeeting.Common.csproj">
+      <Project>{6b062f86-bf0f-470a-b4c2-c19a97b7684e}</Project>
+      <Name>NextMeeting.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NextMeeting.Tasks\NextMeeting.Tasks.csproj">
+      <Project>{a9c05246-84ab-4a78-91f0-b76aabad8c31}</Project>
+      <Name>NextMeeting.Tasks</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

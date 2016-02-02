@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="74dc1ac7-1eba-43fe-9fe8-95cd805dff2b" Publisher="CN=spertus" Version="1.0.0.0" />
+  <Identity Name="44905SbastienPertus.NextMeeting" Publisher="CN=29CCBAF9-4A86-4915-BBBC-BAE873854540" Version="1.1.5.0" />
   <mp:PhoneIdentity PhoneProductId="74dc1ac7-1eba-43fe-9fe8-95cd805dff2b" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>NextMeeting</DisplayName>
-    <PublisherDisplayName>spertus</PublisherDisplayName>
+    <PublisherDisplayName>Sébastien Pertus</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
@@ -24,6 +24,14 @@
         </uap:DefaultTile>
         <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#0070C0" />
       </uap:VisualElements>
+      <Extensions>
+        <Extension Category="windows.backgroundTasks" EntryPoint="NextMeeting.Tasks.TileTask">
+          <BackgroundTasks>
+            <Task Type="systemEvent" />
+            <Task Type="timer" />
+          </BackgroundTasks>
+        </Extension>
+      </Extensions>
     </Application>
   </Applications>
   <Capabilities>

@@ -54,7 +54,7 @@ namespace NextMeeting
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Try to authenticate
-            var isAleradyLogged = await AuthenticationHelper.TyAuthenticateSilentlyAsync();
+            var token = await AuthenticationHelper.TryAuthenticateSilentlyAsync();
 
 
             // Do not repeat app initialization when the Window already has content,
@@ -82,7 +82,7 @@ namespace NextMeeting
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                if (isAleradyLogged)
+                if (!String.IsNullOrEmpty(token))
                     rootFrame.Navigate(typeof(AppShell), e.Arguments);
                 else
                     rootFrame.Navigate(typeof(LoginPage), e.Arguments);

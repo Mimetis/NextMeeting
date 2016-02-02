@@ -15,19 +15,44 @@ using Windows.Graphics.Imaging;
 
 namespace NextMeeting.Common
 {
-    public static class ImageHelper
+    public class ImageHelper
     {
-        private static BitmapImage unknownPersonBitmapImage = new BitmapImage(new Uri("ms-appx:///Assets/UnknownPerson.jpg"));
-        private static BitmapImage docxUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-docx.png"));
-        private static BitmapImage xlsxUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-xlsx.png"));
-        private static BitmapImage pptxUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-pptx.png"));
-        private static BitmapImage oneUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-one.png"));
-        private static BitmapImage pdfUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-pdf.png"));
-        private static BitmapImage zipUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-zip.png"));
-        private static BitmapImage xmlUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-xml.png"));
-        private static BitmapImage txtUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-txt.png"));
-        private static BitmapImage fileUri = new BitmapImage(new Uri("ms-appx:///Assets/Icon-file.png"));
+
+        private static Uri unknownPersonUri = new Uri("ms-appx:///Assets/UnknownPerson.jpg");
+        private static BitmapImage unknownPersonBitmapImage = new BitmapImage(unknownPersonUri);
+        private static Uri docxUrl = new Uri("ms-appx:///Assets/Icon-docx.png");
+        private static BitmapImage docxBitmapImage = new BitmapImage(docxUrl);
+        private static Uri xlsxUri = new Uri("ms-appx:///Assets/Icon-xlsx.png");
+        private static BitmapImage xlsxBitmapImage = new BitmapImage(xlsxUri);
+        private static Uri pptxUri = new Uri("ms-appx:///Assets/Icon-pptx.png");
+        private static BitmapImage pptxBitmapImage = new BitmapImage(pptxUri);
+        private static Uri oneUri = new Uri("ms-appx:///Assets/Icon-one.png");
+        private static BitmapImage oneBitmapImage = new BitmapImage(oneUri);
+        private static Uri pdfUri = new Uri("ms-appx:///Assets/Icon-pdf.png");
+        private static BitmapImage pdfBitmapImage = new BitmapImage(pdfUri);
+        private static Uri zipUri = new Uri("ms-appx:///Assets/Icon-zip.png");
+        private static BitmapImage zipBitmapImage = new BitmapImage(zipUri);
+        private static Uri xmlUri = new Uri("ms-appx:///Assets/Icon-xml.png");
+        private static BitmapImage xmlBitmapImage = new BitmapImage(xmlUri);
+        private static Uri txtUri = new Uri("ms-appx:///Assets/Icon-txt.png");
+        private static BitmapImage txtBitmapImage = new BitmapImage(txtUri);
+        private static Uri fileUri = new Uri("ms-appx:///Assets/Icon-file.png");
+        private static BitmapImage fileBitmapImage = new BitmapImage(fileUri);
         private static Uri unknownPersonImageUri = new Uri("ms-appx:///Assets/UnknownPerson.jpg");
+
+
+        private static ImageHelper current;
+
+        public static ImageHelper Current
+        {
+            get
+            {
+                if (current == null)
+                    current = new ImageHelper();
+
+                return current;
+            }
+        }
 
         public static Uri UnknownPersonImageUri
         {
@@ -111,30 +136,30 @@ namespace NextMeeting.Common
             {
                 case ".doc":
                 case ".docx":
-                    return docxUri;
+                    return docxBitmapImage;
                 case ".xls":
                 case ".xlsx":
-                    return xlsxUri;
+                    return xlsxBitmapImage;
                 case ".ppt":
                 case ".pptx":
-                    return pptxUri;
+                    return pptxBitmapImage;
                 case ".one":
-                    return oneUri;
+                    return oneBitmapImage;
                 case ".pdf":
-                    return pdfUri;
+                    return pdfBitmapImage;
                 case ".zip":
-                    return zipUri;
+                    return zipBitmapImage;
                 case ".xml":
-                    return xmlUri;
+                    return xmlBitmapImage;
                 case ".txt":
-                    return txtUri;
+                    return txtBitmapImage;
                 default:
-                    return fileUri;
+                    return fileBitmapImage;
 
             }
 
         }
-
+ 
         public static async Task<BitmapImage> SaveImageToCacheAndGetImage(Byte[] imageArray, string fileName)
         {
             var folder = ApplicationData.Current.LocalFolder;

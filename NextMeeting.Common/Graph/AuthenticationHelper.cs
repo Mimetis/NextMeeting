@@ -14,11 +14,11 @@ using Windows.UI.ApplicationSettings;
 
 namespace NextMeeting.Graph
 {
-    internal static class AuthenticationHelper
+    public static class AuthenticationHelper
     {
 
         // The Client ID is used by the application to uniquely identify itself to Microsoft Azure Active Directory (AD).
-        static string clientId = App.Current.Resources["ida:ClientID"].ToString();
+        static string clientId = "9da67e3f-3cf9-4793-b924-bbecf9accccf";
 
         private const string AccountProviderId = "https://login.microsoft.com";
         private const string Authority = "organizations";
@@ -42,10 +42,14 @@ namespace NextMeeting.Graph
         private static TaskCompletionSource<Boolean> tcs;
         private static Dictionary<string, CapabilityDiscoveryResult> capabilities;
 
-        public static async Task<Boolean> TyAuthenticateSilentlyAsync()
+
+
+        public static async Task<string> TryAuthenticateSilentlyAsync()
         {
             try
             {
+                var redir = GetAppRedirectURI();
+
                 var aadAccountProvider = await WebAuthenticationCoreManager.FindAccountProviderAsync(
                      AccountProviderId, Authority);
 
@@ -87,7 +91,7 @@ namespace NextMeeting.Graph
                         settings.Values["userEmail"] = userAccount.UserName;
                         settings.Values["userName"] = userAccount.Properties["DisplayName"];
                     }
-                    return true;
+                    return currentToken;
 
                 }
                 else 
@@ -137,13 +141,13 @@ namespace NextMeeting.Graph
                     // The saved account could not be used for getting a token.
                     // Make sure that the UX is ready for a new sign in.
                     await SignOutAsync();
-                    return false;
+                    return null;
                 }
             }
             catch (Exception)
             {
                 await SignOutAsync();
-                return false;
+                return null;
             }
 
 
@@ -210,8 +214,9 @@ namespace NextMeeting.Graph
 
 
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        Debug.WriteLine(ex.Message);
                         SignOutAsync();
                         tcs.TrySetResult(false);
                     }
@@ -227,8 +232,6 @@ namespace NextMeeting.Graph
 
             deferral.Complete();
         }
-
-
 
         public static async Task<string> GetTokenHelperAsync()
         {
@@ -292,6 +295,46 @@ namespace NextMeeting.Graph
                 }
 
                 return token;
+            }
+            else if (webTokenRequestResult.ResponseStatus == WebTokenRequestStatus.UserInteractionRequired)
+            {
+                webTokenRequest = new WebTokenRequest(aadAccountProvider, string.Empty, clientId, WebTokenRequestPromptType.ForceAuthentication);
+                webTokenRequest.Properties.Add("resource", resourceId);
+
+                //get token through prompt
+                if (userID != null)
+                {
+                    // Ensure that the saved account works for getting the token we need.
+                    webTokenRequestResult = await WebAuthenticationCoreManager.RequestTokenAsync(webTokenRequest, userAccount);
+                }
+                else
+                {
+                    webTokenRequestResult = await WebAuthenticationCoreManager.RequestTokenAsync(webTokenRequest);
+                }
+
+                if (webTokenRequestResult.ResponseStatus == WebTokenRequestStatus.Success)
+                {
+                    WebTokenResponse webTokenResponse = webTokenRequestResult.ResponseData[0];
+                    userAccount = webTokenResponse.WebAccount;
+                    currentToken = webTokenResponse.Token;
+
+                    if (userAccount != null)
+                    {
+                        // Save user ID in local storage.
+                        settings.Values["userID"] = userAccount.Id;
+                        settings.Values["userEmail"] = userAccount.UserName;
+                        settings.Values["userName"] = userAccount.Properties["DisplayName"];
+                    }
+                    return token;
+                }
+                else
+                {
+                    // The saved account could not be used for getting a token.
+                    // Make sure that the UX is ready for a new sign in.
+                    await SignOutAsync();
+                    return null;
+
+                }
             }
             else
             {
@@ -359,7 +402,7 @@ namespace NextMeeting.Graph
         {
             // Windows 10 universal apps require redirect URI in the format below. Add a breakpoint to this line, and run the app before you register it so that
             // you can supply the correct redirect URI value.
-            return string.Format("ms-appx-web://microsoft.aad.brokerplugin/{0}", WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host).ToUpper();
+            return string.Format("ms-appx-web://microsoft.aad.brokerplugin/{0}", WebAuthenticationBroker.GetCurrentApplicationCallbackUri().Host.ToUpper());
         }
 
     }

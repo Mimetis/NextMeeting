@@ -477,10 +477,6 @@ namespace NextMeeting.Models
 
                 UserViewModel user = users.FirstOrDefault(u => u.Email == userPrincipalName || u.UserPrincipalName == userPrincipalName);
 
-                //// try to find by the work email
-                //if (user == null)
-                //    user = users.FirstOrDefault(u => u.WorkEmail == userPrincipalName && !string.IsNullOrEmpty(u.UserPrincipalName));
-
 
                 if (user != null)
                     return user;

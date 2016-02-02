@@ -347,7 +347,6 @@ namespace NextMeeting.Models
                 }
             }
 
-
             this.HasNoSharedItems = this.cacheSharedItems.Values.Count == 0;
 
             var orderedItems = this.cacheSharedItems.Values.OrderByDescending(t => t.LastModifiedTime).ToList();

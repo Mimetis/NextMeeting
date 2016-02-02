@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextMeeting.Models
+namespace NextMeeting.Graph
 {
 
     public class SPItemUser
@@ -68,7 +68,6 @@ namespace NextMeeting.Models
         public string WebId { get; internal set; }
         public string Language { get; internal set; }
     }
-
     public class SPKeyValue
     {
         public String Key { get; set; }
