@@ -33,7 +33,7 @@
                 
                 <TextBlock Name="SubjectTextBlock" RelativePanel.Below="OrganizerTextBlock" 
                                Margin="4,0,0,0" RelativePanel.AlignLeftWith="OrganizerTextBlock"
-                               Text="{x:Bind Subject}" FontWeight="Bold" FontSize="12" />
+                               Text="{x:Bind Subject, Mode=OneWay}" FontWeight="Bold" FontSize="12" />
                 <SymbolIcon 
                      Margin="4,0,0,0" RelativePanel.Below="SubjectTextBlock" 
                            RelativePanel.AlignLeftWith="SubjectTextBlock" 
@@ -42,7 +42,7 @@
                                RelativePanel.RightOf="IconTimeImage" 
                                RelativePanel.AlignVerticalCenterWith="IconTimeImage"
                                Margin="4,0,0,0" 
-                               Text="{x:Bind TimeDelta}" FontSize="10" />
+                               Text="{x:Bind TimeDelta, Mode=OneWay}" FontSize="10" />
             </RelativePanel>
 
         </Grid>
@@ -71,7 +71,7 @@
                                RelativePanel.RightOf="IconTimeImage" 
                                RelativePanel.AlignVerticalCenterWith="IconTimeImage"
                                Margin="4,0,0,0" 
-                               Text="{x:Bind TimeDelta}" FontSize="10" />
+                               Text="{x:Bind TimeDelta, Mode=OneWay}" FontSize="10" />
                 
                 <StackPanel Orientation="Horizontal" Name="LocationStackPanel"
                             RelativePanel.Below="IconImage" RelativePanel.AlignLeftWith="IconImage"
@@ -80,7 +80,7 @@
                     <SymbolIcon Margin="0,6,0,0"  Symbol="Map" Foreground="Black" Name="IconLocationImage"/>
 
                     <TextBlock Name="LocationTextBlock" FontSize="14" Foreground="#FF0070C0" 
-                               Margin="5,0,0,0" Text="{x:Bind Location}" />
+                               Margin="5,0,0,0" Text="{x:Bind Location, Mode=OneWay}" />
 
                 </StackPanel>
                 <ItemsControl Name="AttendeesListView" Margin="0,6,0,0"
@@ -113,9 +113,9 @@
                                Margin="5,10,0,10" RelativePanel.Below="AttendeesListView" 
                                RelativePanel.AlignLeftWith="AttendeesListView"
                                TextWrapping="WrapWholeWords"
-                               Text="{x:Bind BodyPreview}" />
+                               Text="{x:Bind BodyPreview, Mode=OneWay}" />
 
-                <Grid RelativePanel.Below="BodyPreviewTextBlock" RelativePanel.AlignLeftWith="BodyPreviewTextBlock">
+                <Grid RelativePanel.Below="BodyPreviewTextBlock" Height="70" RelativePanel.AlignLeftWith="BodyPreviewTextBlock">
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0"
                             Grid.Row="0" VerticalAlignment="Top"
                             Visibility="{x:Bind IsLoadingSharedItems, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"

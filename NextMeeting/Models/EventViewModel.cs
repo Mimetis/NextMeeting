@@ -34,7 +34,6 @@ namespace NextMeeting.Models
         }
 
         private int index;
-        private int groupIndex;
         private Microsoft.Graph.IEvent internalEvent;
         private bool isLoadingTrendings = true;
         private bool isLoading = true;
@@ -46,6 +45,11 @@ namespace NextMeeting.Models
         private bool? isAllDay = false;
         internal string organizerEmail;
         private string organizerFriendlyName;
+        private string subject;
+        private string bodyPreview;
+        private string location;
+        private DateTime startingDate;
+        private DateTime endingDate;
         private Microsoft.Graph.GraphService graph = AuthenticationHelper.GetGraphService();
         private CacheManager<SPItemDoc> cacheTrendings;
         private CacheManager<SPItemDoc> cacheDriveItems;
@@ -57,13 +61,36 @@ namespace NextMeeting.Models
         private ObservableCollection<DriveItemViewModel> topSharedItems;
         private TaskScheduler uiScheduler;
 
-
         public Microsoft.Graph.ItemBody Body { get; set; }
         public String Id { get; set; }
-        public string BodyPreview { get; set; }
+        public string BodyPreview
+        {
+            get
+            {
+                return bodyPreview;
+            }
+
+            set
+            {
+                bodyPreview = value;
+                RaisePropertyChanged(nameof(BodyPreview));
+            }
+        }
         public bool IsBodyEmpty { get; set; }
         public bool IsLocationUndefined { get; set; }
-        public String Location { get; set; }
+        public String Location
+        {
+            get
+            {
+                return location;
+            }
+
+            set
+            {
+                location = value;
+                RaisePropertyChanged(nameof(Location));
+            }
+        }
         public ObservableCollection<DriveItemViewModel> Trendings
         {
             get
@@ -125,16 +152,49 @@ namespace NextMeeting.Models
                 return new ObservableCollection<AttendeeViewModel>(this.Attendees.Take(TOP_ATTENDEES_NUMBERS).ToList());
             }
         }
-        public String ReferenceIndex
+        public String Subject
         {
             get
             {
-                return this.groupIndex + "_" + this.index;
+                return subject;
+            }
+
+            set
+            {
+                subject = value;
+                RaisePropertyChanged(nameof(Subject));
             }
         }
-        public String Subject { get; set; }
-        public DateTime StartingDate { get; set; }
-        public DateTime EndingDate { get; set; }
+        public DateTime StartingDate
+        {
+            get
+            {
+                return startingDate;
+            }
+
+            set
+            {
+                startingDate = value;
+                RaisePropertyChanged(nameof(StartingDate));
+                RaisePropertyChanged(nameof(StartingHourDate));
+                RaisePropertyChanged(nameof(TimeDelta));
+            }
+        }
+        public DateTime EndingDate
+        {
+            get
+            {
+                return endingDate;
+            }
+
+            set
+            {
+                endingDate = value;
+                RaisePropertyChanged(nameof(EndingDate));
+                RaisePropertyChanged(nameof(EndingHourDate));
+                RaisePropertyChanged(nameof(TimeDelta));
+            }
+        }
         public String TimeDelta
         {
             get
@@ -309,20 +369,27 @@ namespace NextMeeting.Models
                 RaisePropertyChanged(nameof(IsAllDay));
             }
         }
+        public int Index
+        {
+            get
+            {
+                return index;
+            }
 
-        public EventViewModel(Microsoft.Graph.IEvent ev, int index, int groupIndex)
+            set
+            {
+                index = value;
+                RaisePropertyChanged(nameof(Index));
+            }
+        }
+    
+        public EventViewModel(Microsoft.Graph.IEvent ev)
         {
             this.IsLoading = true;
-            uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-            this.index = index;
-            this.groupIndex = groupIndex;
+            this.uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            //this.Index = index;
+            //this.GroupIndex = groupIndex;
             this.Id = ev.Id;
-            this.IsAllDay = ev.IsAllDay;
-
-            this.organizerEmail = ev.Organizer.EmailAddress.Address;
-
-            // Temporary Organizer name.
-            this.OrganizerFriendlyName = ev.Organizer.EmailAddress.Name;
 
             // get trendings from cache manager
             this.cacheTrendings = CacheManager<SPItemDoc>.Get(this.Id + "_trends");
@@ -336,7 +403,7 @@ namespace NextMeeting.Models
             this.IsLoading = false;
 
         }
-        private void FillItem(Microsoft.Graph.IEvent ev)
+        public void FillItem(Microsoft.Graph.IEvent ev)
         {
             this.DriveItems = new ObservableCollection<DriveItemViewModel>();
             this.Trendings = new ObservableCollection<DriveItemViewModel>();
@@ -353,6 +420,11 @@ namespace NextMeeting.Models
             this.BodyPreview = ev.BodyPreview;
             this.IsBodyEmpty = String.IsNullOrWhiteSpace(ev.BodyPreview);
             this.Body = ev.Body;
+            this.IsAllDay = ev.IsAllDay;
+            this.organizerEmail = ev.Organizer.EmailAddress.Address;
+            // Temporary Organizer name.
+            this.OrganizerFriendlyName = ev.Organizer.EmailAddress.Name;
+
             // Adding Attendees
             foreach (var a in ev.Attendees.ToList())
                 this.Attendees.Add(new AttendeeViewModel(a));
@@ -432,7 +504,7 @@ namespace NextMeeting.Models
             var updateUsersTask = updateUsersAsync(token);
 
 
-            await Task.WhenAll(new [] { loadShareItemsTask, updateUsersTask });
+            await Task.WhenAll(new[] { loadShareItemsTask, updateUsersTask });
 
             await TaskHelper.Current.SendNotification();
         }

@@ -16,13 +16,14 @@
 
     </common:BasePage.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="#F2F2F2">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <ProgressBar IsIndeterminate="True" Name="EventsProgressBarr" Visibility="Collapsed" />
         <ListView HorizontalAlignment="Stretch" Grid.Row="1" Name="EventViewList" HorizontalContentAlignment="Stretch"
-            ItemsSource="{x:Bind EventViewModelCS.View, Mode=OneWay}" Background="#F2F2F2"
+            ItemsSource="{x:Bind EventViewModelCS.View, Mode=OneWay}" 
                   Margin="0" Padding="0"
                   IsItemClickEnabled="True"
                   ScrollViewer.VerticalScrollBarVisibility="Hidden"

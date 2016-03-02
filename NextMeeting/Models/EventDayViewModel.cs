@@ -32,33 +32,12 @@ namespace NextMeeting.Models
             }
         }
 
-        public int Index
-        {
-            get
-            {
-                return index;
-            }
+       
 
-            set
-            {
-                index = value;
-            }
-        }
-
-        public EventDayViewModel(DateTime dateTime, int index, List<Microsoft.Graph.IEvent> events)
+        public EventDayViewModel(DateTime dateTime, int index)
         {
-            this.Index = index;
             this.Events = new ObservableCollection<EventViewModel>();
             this.DateTime = dateTime.ToLocalTime();
-
-
-            for (int i = 0; i <= events.Count - 1; i++)
-            {
-                var ev = events[i];
-                var evm = new EventViewModel(ev, i, index);
-                this.Events.Add(evm);
-            }
-
 
         }
 
