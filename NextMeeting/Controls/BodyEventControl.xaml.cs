@@ -25,10 +25,7 @@ namespace NextMeeting.Controls
             this.InitializeComponent();
         }
 
-
-
-
-        public ItemBody Body
+       public ItemBody Body
         {
             get { return (ItemBody)GetValue(BodyProperty); }
             set { SetValue(BodyProperty, value); }
@@ -50,7 +47,7 @@ namespace NextMeeting.Controls
 
         private void SetBody()
         {
-            if (Body.ContentType == BodyType.html)
+            if (Body.ContentType == BodyType.Html)
             {
                 BodyWebview.Visibility = Visibility.Visible;
                 BodyTextBlock.Visibility = Visibility.Collapsed;

@@ -1,0 +1,160 @@
+﻿<Page
+    x:Class="NextMeeting.Views.EventDetails"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NextMeeting.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ctrl="using:NextMeeting.Controls"
+    xmlns:models="using:NextMeeting.Models"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <Pivot Background="#F2F2F2"
+            Name="MeetingDetailsPivot"
+            Style="{StaticResource MeetingDetailsPivotStyle}" 
+            Grid.Row="1" PivotItemLoading="Pivot_PivotItemLoading" 
+            ItemContainerStyle="{StaticResource MeetingDetailsPivotItemStyle}"  >
+            <PivotItem Tag="meeting">
+                <PivotItem.Header>
+                    <ctrl:PivotItemHeaderControl Symbol="CalendarDay" />
+                </PivotItem.Header>
+                <PivotItem.Content>
+                    <Grid>
+                        <ContentControl Content="{x:Bind ViewModel.EventModel}" HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch">
+                            <ContentControl.ContentTemplate>
+                                <DataTemplate x:DataType="models:EventModel">
+                                    <Grid Margin="0,0,0,5"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="White">
+
+                                        <Border BorderBrush="#C6C6C6C6" BorderThickness="1" />
+                                        <RelativePanel Margin="5,5,0,0" Name="EvmRelativePanel" >
+                                            <Image Name="WaitingIconImage" Source="/Assets/UnknownPerson.jpg" Width="50" Height="50" Stretch="UniformToFill" />
+                                            <Image Name="IconImage" Source="{x:Bind Organizer.Photo, Mode=OneWay, FallbackValue='/Assets/UnknownPerson.jpg'}"
+                                               Width="50" Height="50" 
+                                               Stretch="UniformToFill" />
+                                            <TextBlock Name="OrganizerTextBlock" RelativePanel.RightOf="IconImage" RelativePanel.AlignTopWith="IconImage"
+                                                    Margin="4,0,0,0" Text="{x:Bind Organizer.DisplayName, Mode=OneWay}" FontWeight="Bold" FontSize="12" />
+                                            <TextBlock Name="SubjectTextBlock" RelativePanel.Below="OrganizerTextBlock" 
+                                                   Margin="4,0,0,0" RelativePanel.AlignLeftWith="OrganizerTextBlock"
+                                                   Text="{x:Bind Subject}" FontWeight="Bold" FontSize="12" />
+                                            <SymbolIcon Margin="4,0,0,0" RelativePanel.Below="SubjectTextBlock" 
+                                                    RelativePanel.AlignLeftWith="SubjectTextBlock" 
+                                                    Symbol="Clock" Foreground="Black" Name="IconTimeImage"/>
+                                            <TextBlock Name="TimeDeltaTextBlock"
+                                                   RelativePanel.RightOf="IconTimeImage" 
+                                                   RelativePanel.AlignVerticalCenterWith="IconTimeImage"
+                                                   Margin="4,0,0,0" 
+                                                   Text="{x:Bind TimeDelta}" FontSize="10" />
+                                            <SymbolIcon 
+                                                Margin="0,6,0,0" RelativePanel.Below="IconImage" RelativePanel.AlignLeftWith="IconImage" 
+                                                Symbol="Map" Foreground="Black" Name="IconLocationImage"/>
+
+                                            <TextBlock Name="LocationTextBlock" FontSize="14" Foreground="#FF0070C0" 
+                                                   Margin="5,0,0,0" RelativePanel.RightOf="IconLocationImage" 
+                                                   RelativePanel.AlignBottomWith="IconLocationImage"
+                                                   Text="{x:Bind Location}" />
+                                            <ctrl:BodyEventControl Name="BodyControl" Background="Yellow" HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch" BorderBrush="Red" 
+                                                    RelativePanel.AlignLeftWithPanel="True" 
+                                                    RelativePanel.AlignRightWithPanel="True"
+                                                    RelativePanel.AlignBottomWithPanel="True"
+                                                    RelativePanel.Below="LocationTextBlock" 
+                                                    BorderThickness="2"
+                                                    Body="{x:Bind Body}"
+                                                    Margin="0" />
+                                        </RelativePanel>
+
+                                    </Grid>
+
+                                </DataTemplate>
+                            </ContentControl.ContentTemplate>
+
+                        </ContentControl>
+
+                        <!--<ctrl:PivotItemWaiter x:Name="PivotItemWaiterEvent" 
+                                              Text="Loading ..."
+                                              Visibility="{x:Bind Event.IsLoading, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"/>-->
+
+                    </Grid>
+                </PivotItem.Content>
+            </PivotItem>
+            <PivotItem Tag="organizer team work">
+                <PivotItem.Header>
+                    <ctrl:PivotItemHeaderControl Symbol="People" />
+                </PivotItem.Header>
+                <PivotItem.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <ListView ItemsSource="{x:Bind ViewModel.Team, Mode=OneWay}" 
+                                  HorizontalAlignment="Stretch"
+                                  Grid.Row="1" 
+                                  x:Name="WorkTeamListView"
+                                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                  SelectionMode="None"
+                                  ItemContainerStyle="{StaticResource ItemsViewItemStyle}"
+                                  IsItemClickEnabled="False"   
+                                  IsRightTapEnabled="False"
+                                  IsDoubleTapEnabled="False"
+                                  IsTapEnabled="False"
+                                  ItemTemplate="{StaticResource UserViewModelTemplate}"
+                                  HorizontalContentAlignment="Stretch">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsStackPanel CacheLength="2" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                        </ListView>
+                    </Grid>
+                </PivotItem.Content>
+            </PivotItem>
+            <PivotItem Tag="organizer files"  >
+                <PivotItem.Header>
+                    <ctrl:PivotItemHeaderControl Symbol="Document" />
+                </PivotItem.Header>
+                <PivotItem.Content>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <GridView ItemsSource="{x:Bind ViewModel.UserItems, Mode=OneWay}" 
+                                  ItemTemplate="{StaticResource UserItemsTemplate}"
+                                  HorizontalAlignment="Stretch"
+                                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                  Visibility="{x:Bind ViewModel.IsLoadingUserItems, Mode=OneWay, Converter={StaticResource NotBooleanVisibilityConverter}}"
+                                  SelectionMode="None"
+                                  ItemClick="{x:Bind ViewModel.UserItemClick}"
+                                  ItemContainerStyle="{StaticResource ItemsViewItemStyle}"
+                                  IsItemClickEnabled="True"   
+                                  IsRightTapEnabled="False"
+                                  IsDoubleTapEnabled="False"
+                                  VerticalContentAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  IsTapEnabled="False"
+                                  HorizontalContentAlignment="Stretch">
+                            <GridView.ItemContainerTransitions>
+                                <TransitionCollection>
+                                    <RepositionThemeTransition/>
+                                </TransitionCollection>
+                            </GridView.ItemContainerTransitions>
+                        </GridView>
+
+                        <!--
+                        <ctrl:PivotItemWaiter x:Name="PivotItemNoFilesPanel" 
+                                              Text="No Files found.. :("
+                                              Visibility="{x:Bind ViewModel.EventModel.HasNoFiles, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"/>
+
+                        <ctrl:PivotItemWaiter x:Name="PivotItemWaiterLastFiles" 
+                                              Text="Loading ..."
+                                              Visibility="{x:Bind ViewModel.EventModel.IsLoadingLastFiles, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"/>
+                    -->
+                    </Grid>
+
+                </PivotItem.Content>
+            </PivotItem>
+        </Pivot>
+
+    </Grid>
+</Page>

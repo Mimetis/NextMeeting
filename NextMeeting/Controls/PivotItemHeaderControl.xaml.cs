@@ -60,7 +60,6 @@ namespace NextMeeting.Controls
             CheckBorderOpacity(pi);
         }
 
-
         public Symbol Symbol
         {
             get { return (Symbol)GetValue(SymbolProperty); }
@@ -70,7 +69,6 @@ namespace NextMeeting.Controls
         // Using a DependencyProperty as the backing store for Symbol.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SymbolProperty =
             DependencyProperty.Register("Symbol", typeof(Symbol), typeof(PivotItemHeaderControl), new PropertyMetadata(Symbol.Account));
-
 
         private void Pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -99,14 +97,6 @@ namespace NextMeeting.Controls
                 PivotItemHeaderControlBorder.Opacity = 0.0d;
             }
         }
-        //private void RegisterSelectedItemChanged()
-        //{
-        //    this.pivot.RegisterPropertyChangedCallback(Pivot.SelectedItemProperty, SelectedItemChanged);
-
-        //}
-        //private void SelectedItemChanged(DependencyObject sender, DependencyProperty dp)
-        //{
-
-        //}
+        
     }
 }

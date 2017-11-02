@@ -1,0 +1,60 @@
+﻿<Page
+    x:Class="NextMeeting.Views.Events"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NextMeeting.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:NextMeeting.Converters"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <CollectionViewSource x:Name="EventViewModelCS" IsSourceGrouped="True" Source="{x:Bind ViewModel.Events, Mode=OneWay}" />
+        <converters:DateStringConverter x:Key="DateStringConverter" />
+    </Page.Resources>
+
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ProgressBar IsIndeterminate="True" Name="EventsProgressBarr" Visibility="Collapsed" />
+
+        <ListView HorizontalAlignment="Stretch" Grid.Row="1" Name="EventViewList" HorizontalContentAlignment="Stretch"
+                  ItemsSource="{x:Bind EventViewModelCS.View, Mode=OneWay}" 
+                  ItemTemplateSelector="{StaticResource MeetingTemplateSelector}" 
+                  Margin="0" Padding="0"
+                  IsItemClickEnabled="True"
+                  ItemClick="{x:Bind ViewModel.ItemClick}"
+                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                  Style="{StaticResource ListViewNextMeetingsStyle}">
+
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="5,5,5,0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.GroupStyle>
+                <GroupStyle HidesIfEmpty="True">
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0" Padding="0">
+                                <TextBlock FontSize="16" 
+                                           Text="{Binding Key, Converter={StaticResource DateStringConverter}}"
+                                           Foreground="#FF0070C0" Margin="0,0,0,0" FontWeight="Bold"
+                                           />
+                            </Grid>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+
+                </GroupStyle>
+            </ListView.GroupStyle>
+
+        </ListView>
+
+    </Grid>
+</Page>

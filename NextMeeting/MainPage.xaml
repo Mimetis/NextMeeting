@@ -1,0 +1,45 @@
+﻿<Page
+    x:Class="NextMeeting.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NextMeeting"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:RS3="using:Windows.UI.Xaml.Controls"
+    xmlns:appmodel="using:Windows.ApplicationModel"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <RS3:NavigationView IsSettingsVisible="True" x:Name="navview" AlwaysShowHeader="False" ItemInvoked="Navview_ItemInvoked">
+            <RS3:NavigationView.MenuItems>
+                <RS3:NavigationViewItem Content="Meetings" IsSelected="True">
+                    <RS3:NavigationViewItem.Icon>
+                        <!--Choose beetween SymbolIcon or FontIcon :) --> 
+                        <SymbolIcon Symbol="CalendarDay" ></SymbolIcon>
+                        <!--<FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE720;" ></FontIcon>-->
+                    </RS3:NavigationViewItem.Icon>
+                </RS3:NavigationViewItem>
+                <RS3:NavigationViewItem Content="Search" >
+                    <RS3:NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Find" ></SymbolIcon>
+                    </RS3:NavigationViewItem.Icon>
+                </RS3:NavigationViewItem>
+                <RS3:NavigationViewItem Content="Disconnect" >
+                    <RS3:NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Import" ></SymbolIcon>
+                    </RS3:NavigationViewItem.Icon>
+                </RS3:NavigationViewItem>
+            </RS3:NavigationView.MenuItems>
+            <Frame x:Name="appNavFrame" Navigated="AppNavFrame_Navigated" Margin="0,32,0,0">
+            </Frame>
+        </RS3:NavigationView>
+
+        <TextBlock x:Name="windowTitle" 
+                   Style="{ThemeResource CaptionTextBlockStyle}" 
+                   Visibility="{x:Bind TitleHelper.TitleVisibility, Mode=OneWay}" 
+                   Margin="{x:Bind TitleHelper.TitlePosition, Mode=OneWay}" VerticalAlignment="Top" 
+                   Text="{x:Bind appmodel:Package.Current.DisplayName}"></TextBlock>
+
+    </Grid>
+</Page>

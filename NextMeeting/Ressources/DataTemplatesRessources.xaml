@@ -1,0 +1,245 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="NextMeeting.Ressources.DataTemplatesRessources"
+    xmlns:local="using:NextMeeting.Ressources"
+    xmlns:local1="using:NextMeeting"
+    xmlns:viewModels="using:NextMeeting.ViewModels"
+    xmlns:conv="using:NextMeeting.Converters"
+    xmlns:views="using:NextMeeting.Views"
+    xmlns:models="using:NextMeeting.Models">
+
+    <conv:BooleanVisibilityConverter x:Key="BooleanVisibilityConverter" />
+    <conv:NotBooleanVisibilityConverter x:Key="NotBooleanVisibilityConverter" />
+    <viewModels:MeetingTemplateSelector x:Key="MeetingTemplateSelector" 
+                                       MeetingTemplate="{StaticResource MeetingTemplate}"
+                                       FirstMeetingTemplate="{StaticResource FirstMeetingTemplate}" />
+
+ 
+
+    <DataTemplate x:DataType="models:EventModel" x:Key="MeetingTemplate">
+        <Grid Margin="0" HorizontalAlignment="Stretch" Background="White" MinHeight="60" >
+            <Border BorderBrush="#C6C6C6C6" BorderThickness="1" />
+            <Border Margin="1" BorderBrush="#FF0070C0" 
+                    BorderThickness="2,0,0,0" />
+            <RelativePanel Margin="8,5,0,2">
+                <Image Name="WaitingIconImage" Source="/Assets/UnknownPerson.jpg" Width="40" Height="40" Stretch="UniformToFill" />
+                <Image Name="IconImage" Source="{x:Bind Organizer.Photo, Mode=OneWay, FallbackValue='/Assets/UnknownPerson.jpg'}"
+                           Width="50" Height="50" 
+                           Stretch="UniformToFill" />
+
+                <TextBlock Name="OrganizerTextBlock" RelativePanel.RightOf="IconImage" RelativePanel.AlignTopWith="IconImage"
+                               Margin="4,0,0,0" Text="{x:Bind Organizer.DisplayName, Mode=OneWay}" FontWeight="Bold" FontSize="12" />
+
+                <TextBlock Name="SubjectTextBlock" RelativePanel.Below="OrganizerTextBlock" 
+                               Margin="4,0,0,0" RelativePanel.AlignLeftWith="OrganizerTextBlock"
+                               Text="{x:Bind Subject, Mode=OneWay}" FontWeight="Bold" FontSize="12" />
+                <SymbolIcon 
+                     Margin="4,0,0,0" RelativePanel.Below="SubjectTextBlock" 
+                           RelativePanel.AlignLeftWith="SubjectTextBlock" 
+                    Symbol="Clock" Foreground="Black" Name="IconTimeImage"/>
+                <TextBlock Name="TimeDeltaTextBlock"
+                               RelativePanel.RightOf="IconTimeImage" 
+                               RelativePanel.AlignVerticalCenterWith="IconTimeImage"
+                               Margin="4,0,0,0" 
+                               Text="{x:Bind TimeDelta, Mode=OneWay}" FontSize="10" />
+            </RelativePanel>
+
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:DataType="models:EventModel" x:Key="FirstMeetingTemplate">
+       
+        <Grid Margin="0" HorizontalAlignment="Stretch" Background="White" >
+            <Border BorderBrush="#C6C6C6C6" BorderThickness="1" />
+            <Border Margin="1" BorderBrush="#FF0070C0" 
+                    BorderThickness="2,0,0,0" />
+            <RelativePanel Margin="8,5,0,2">
+                <Image Name="WaitingIconImage" Source="/Assets/UnknownPerson.jpg" Width="50" Height="50" Stretch="UniformToFill" />
+                <Image Name="IconImage" Source="{x:Bind Organizer.Photo, Mode=OneWay}" Width="50" Height="50" 
+                           Stretch="UniformToFill" />
+                <TextBlock Name="OrganizerTextBlock" RelativePanel.RightOf="IconImage" RelativePanel.AlignTopWith="IconImage"
+                               Margin="4,0,0,0" Text="{x:Bind Organizer.DisplayName, Mode=OneWay}" FontWeight="Bold" FontSize="12" />
+                <TextBlock Name="SubjectTextBlock" RelativePanel.Below="OrganizerTextBlock" 
+                               Margin="4,0,0,0" RelativePanel.AlignLeftWith="OrganizerTextBlock"
+                               Text="{x:Bind Subject, Mode=OneTime}" FontWeight="Bold" FontSize="12" />
+                <SymbolIcon 
+                     Margin="4,0,0,0" RelativePanel.Below="SubjectTextBlock" 
+                           RelativePanel.AlignLeftWith="SubjectTextBlock" 
+                    Symbol="Clock" Foreground="Black" Name="IconTimeImage"/>
+
+                <TextBlock Name="TimeDeltaTextBlock"
+                               RelativePanel.RightOf="IconTimeImage" 
+                               RelativePanel.AlignVerticalCenterWith="IconTimeImage"
+                               Margin="4,0,0,0" 
+                               Text="{x:Bind TimeDelta, Mode=OneWay}" FontSize="10" />
+
+                <StackPanel Orientation="Horizontal" Name="LocationStackPanel"
+                            RelativePanel.Below="IconImage" RelativePanel.AlignLeftWith="IconImage"
+                            Visibility="{x:Bind IsLocationUndefined, Mode=OneWay, Converter={StaticResource NotBooleanVisibilityConverter}}">
+
+                    <SymbolIcon Margin="0,6,0,0"  Symbol="Map" Foreground="Black" Name="IconLocationImage"/>
+
+                    <TextBlock Name="LocationTextBlock" FontSize="14" Foreground="#FF0070C0" 
+                               Margin="5,0,0,0" Text="{x:Bind Location, Mode=OneWay}" />
+
+                </StackPanel>
+                <ItemsControl Name="AttendeesListView" Margin="0,6,0,0"
+                              RelativePanel.Below="LocationStackPanel" RelativePanel.AlignLeftWith="LocationStackPanel">
+                </ItemsControl>
+                <!--<ItemsControl Name="AttendeesListView" Margin="0,6,0,0"
+                                  RelativePanel.Below="LocationStackPanel" RelativePanel.AlignLeftWith="LocationStackPanel"
+                                  ItemsSource="{Binding TopAttendees, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Image Name="WaitingImage" Margin="0,0,5,0"  
+                                           Source="/Assets/UnknownPerson.jpg"
+                                       Width="20" Height="20" 
+                                       Stretch="UniformToFill" />
+                                <Image Name="AttendeeImage" Margin="0,0,5,0"  
+                                           Source="{Binding User.Photo, Mode=OneWay, Converter={StaticResource DebugConverter}, FallbackValue='/Assets/UnknownPerson.jpg'}"
+                                       Width="20" Height="20" 
+                                       Stretch="UniformToFill" />
+
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Top"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>-->
+
+                <TextBlock Name="BodyPreviewTextBlock" FontSize="14" 
+                              Visibility="{x:Bind IsBodyEmpty, Mode=OneWay, Converter={StaticResource NotBooleanVisibilityConverter}}"
+                               Margin="5,10,0,10" RelativePanel.Below="AttendeesListView" 
+                               RelativePanel.AlignLeftWith="AttendeesListView"
+                               TextWrapping="WrapWholeWords"
+                               Text="{x:Bind BodyPreview, Mode=OneWay}" />
+
+                <Grid RelativePanel.Below="BodyPreviewTextBlock" Height="120" RelativePanel.AlignLeftWith="BodyPreviewTextBlock">
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0"
+                            Grid.Row="0" VerticalAlignment="Top"
+                            Visibility="{x:Bind IsLoadingSharedItems, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"
+                            Name="StackPanelWaitingLoadDriveItems">
+
+                        <ProgressRing Width="5" Height="5" Foreground="#FF0070C0"
+                                  VerticalAlignment="Top"
+                                  IsActive="{x:Bind IsLoadingSharedItems, Mode=OneWay}" 
+                                  Name="ProgressRingWaitingLoadDriveItems" />
+
+                        <TextBlock Text="Loading useful things ... " 
+                               VerticalAlignment="Top" FontSize="10" Margin="5,0,0,0" Foreground="#FF0070C0" />
+                    </StackPanel>
+
+                    <GridView   Name="GridViewDriveItems" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch"
+                            Margin="0,10,0,0" Grid.Row="0"
+                            Visibility="{x:Bind IsLoadingSharedItems, Mode=OneWay, Converter={StaticResource NotBooleanVisibilityConverter}}"
+                            ItemsSource="{x:Bind TopSharedItems, Mode=OneWay}" 
+                            ItemTemplate="{StaticResource UserItemsTemplate}"
+                            HorizontalAlignment="Stretch"
+                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            SelectionMode="None"
+                            ItemContainerStyle="{StaticResource ItemsViewItemStyle}"
+                            IsItemClickEnabled="True"   
+                            IsRightTapEnabled="False"
+                            IsDoubleTapEnabled="False"
+                            IsTapEnabled="False"
+                            HorizontalContentAlignment="Stretch">
+
+                        <GridView.ItemContainerTransitions>
+                            <TransitionCollection>
+                                <RepositionThemeTransition/>
+                            </TransitionCollection>
+                        </GridView.ItemContainerTransitions>
+                    </GridView>
+
+                </Grid>
+
+            </RelativePanel>
+
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:DataType="models:ResourceModel" x:Key="UserItemsTemplate" >
+        <Grid Margin="0,0,5,0" Background="White" Width="146" Height="200">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border BorderBrush="#C6C6C6C6" Grid.RowSpan="2" BorderThickness="1" />
+
+            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,5,0,0">
+                <Image Name="FileImage" 
+                   HorizontalAlignment="Left" VerticalAlignment="Center"  
+                   x:Phase="1" Margin="5,0,0,0" 
+                   Source="{x:Bind FileExtensionIcon, Mode=OneWay}"
+                   Width="20"  Stretch="Uniform" />
+
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Top" Grid.Row="0" Name="NameTextBlock" 
+                       x:Phase="1" Text="{x:Bind Title, Mode=OneWay}" 
+                       FontWeight="Bold" FontSize="10"
+                       TextWrapping="NoWrap"
+                       />
+
+            </StackPanel>
+
+            <TextBlock Name="PreviewText" Grid.Row="1"
+                           x:Phase="2" 
+                           Margin="5,5,0,0"
+                           Text="{x:Bind PreviewText, Mode=OneWay}"  FontSize="10" />
+            <!--<StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,5,0,5" >
+               
+
+                --><!--<TextBlock Name="LastModifiedDateTimeTextBlock" 
+                           x:Phase="2" TextWrapping="Wrap"
+                           Margin="5,5,0,0"
+                           Text="{x:Bind LastModifiedDateTimeFriendly, Mode=OneWay}"  FontSize="10" />--><!--
+
+            </StackPanel>-->
+
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:DataType="models:UserModel"  x:Key="UserViewModelTemplate" >
+        <Grid Margin="0,0,0,0" Background="White" HorizontalAlignment="Stretch" Height="60">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border BorderBrush="#C6C6C6C6" Grid.ColumnSpan="4" BorderThickness="1" />
+
+            <Grid Grid.Column="0">
+                <Image Name="WaitingImage" Margin="5"  Source="/Assets/UnknownPerson.jpg"
+                                       Width="50" Height="50" 
+                                       ToolTipService.ToolTip="{x:Bind DisplayName}"
+                                       x:Phase="1"
+                                       Stretch="UniformToFill" />
+                <Image Name="AttendeeImage" Margin="5"  
+                                       x:Phase="3" 
+                                       ToolTipService.ToolTip="{x:Bind DisplayName}"
+                                       Source="{x:Bind Photo, Mode=OneWay, FallbackValue='/Assets/UnknownPerson.jpg'}"
+                                       Width="50" Height="50" 
+                                       Stretch="UniformToFill" />
+
+            </Grid>
+            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                <TextBlock Text="{x:Bind DisplayName}" x:Phase="2" FontWeight="Bold" FontSize="16" />
+                <TextBlock Text="{x:Bind JobTitle}" x:Phase="2" FontSize="12" FontStyle="Italic" />
+                <TextBlock Text="{x:Bind Email}" x:Phase="2" FontSize="12" />
+
+            </StackPanel>
+
+        </Grid>
+    </DataTemplate>
+
+
+</ResourceDictionary>
