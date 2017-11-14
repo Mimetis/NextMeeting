@@ -33,15 +33,28 @@ namespace NextMeeting
 
         // Navigation service
         private INavigationService _navigationService;
+        private bool firstTime = true;
 
         public MainPage()
         {
             this.InitializeComponent();
 
+            this.Loaded += MainPage_Loaded;
+
             // Tracking back arrow click event
             var nav = SystemNavigationManager.GetForCurrentView();
             nav.BackRequested += Nav_BackRequested;
 
+        }
+
+        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            // first time we load, go to meeting
+            if (firstTime)
+            {
+                _navigationService.NavigateToPage<Events>();
+                firstTime = false;
+            }
         }
 
         /// <summary>
@@ -59,20 +72,33 @@ namespace NextMeeting
         public void InitializeNavigationService(INavigationService navigationService)
         {
             _navigationService = navigationService;
-            
             _navigationService.Navigated += NavigationService_Navigated;
         }
 
-        private void NavigationService_Navigated(object sender, EventArgs e)
+        private void NavigationService_Navigated(object sender, NavigationEventArgs e)
         {
-            var ignored = DispatcherHelper.ExecuteOnUIThreadAsync(() =>
+            // Set the correct icon
+            switch (e.SourcePageType)
             {
-                var nav = SystemNavigationManager.GetForCurrentView();
+                case Type c when e.SourcePageType == typeof(Events):
+                    ((NavigationViewItem)navview.MenuItems[0]).IsSelected = true;
+                    break;
+                case Type c when e.SourcePageType == typeof(Search):
+                    ((NavigationViewItem)navview.MenuItems[1]).IsSelected = true;
+                    break;
+                case Type c when e.SourcePageType == typeof(Logout):
+                    ((NavigationViewItem)navview.MenuItems[2]).IsSelected = true;
+                    break;
+            }
 
-                nav.AppViewBackButtonVisibility = _navigationService.CanGoBack ? 
-                    AppViewBackButtonVisibility.Visible : 
-                    AppViewBackButtonVisibility.Collapsed;
-            });
+            DispatcherHelper.ExecuteOnUIThreadAsync(() =>
+            {
+                 var nav = SystemNavigationManager.GetForCurrentView();
+
+                 nav.AppViewBackButtonVisibility = _navigationService.CanGoBack ?
+                     AppViewBackButtonVisibility.Visible :
+                     AppViewBackButtonVisibility.Collapsed;
+             });
         }
 
         private void Nav_BackRequested(object sender, BackRequestedEventArgs e)
@@ -84,17 +110,17 @@ namespace NextMeeting
         public TitleBarHelper TitleHelper
         {
             get
-            {   
+            {
                 return TitleBarHelper.Instance;
             }
         }
 
-
+   
         private async void Navview_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)
             {
-               // _navigationService.NavigateToSettingsAsync();
+                // _navigationService.NavigateToSettingsAsync();
                 return;
             }
 
@@ -107,16 +133,9 @@ namespace NextMeeting
                     await _navigationService.NavigateToPage<Search>();
                     break;
                 case "Disconnect":
-                    //WamProvider wamProvider = new WamProvider();
-                    //wamProvider.LoginAsync();
-                    _navigationService.Disconnect();
+                    await _navigationService.NavigateToPage<Logout>();
                     break;
             }
-        }
-
-        private void AppNavFrame_Navigated(object sender, NavigationEventArgs e)
-        {
-
         }
     }
 }

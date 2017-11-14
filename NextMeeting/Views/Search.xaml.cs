@@ -22,13 +22,25 @@ namespace NextMeeting.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class Search : Page, IPageViewModel<SearchesViewModel>
+    public sealed partial class Search : Page, IPageWithViewModel<SearchesViewModel>
     {
         public Search()
         {
             this.InitializeComponent();
         }
 
-        public SearchesViewModel ViewModel { get; set; }
+        SearchesViewModel viewModel;
+        public SearchesViewModel ViewModel
+        {
+            get
+            {
+                return viewModel;
+            }
+        }
+
+        public void SetViewModel(IViewModelNavigable viewModel)
+        {
+            this.viewModel = viewModel as SearchesViewModel;
+        }
     }
 }

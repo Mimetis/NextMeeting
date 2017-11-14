@@ -11,19 +11,24 @@
     <Page.Resources>
         <CollectionViewSource x:Name="EventViewModelCS" IsSourceGrouped="True" Source="{x:Bind ViewModel.Events, Mode=OneWay}" />
         <converters:DateStringConverter x:Key="DateStringConverter" />
+        <converters:BooleanVisibilityConverter x:Key="BooleanVisibilityConverter" />
     </Page.Resources>
-
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="80" />
             <RowDefinition Height="10" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ProgressBar IsIndeterminate="True" Name="EventsProgressBarr" Visibility="Collapsed" />
+        <TextBlock Text="Next meetings" Style="{StaticResource TitleStyle}" />
 
-        <ListView HorizontalAlignment="Stretch" Grid.Row="1" Name="EventViewList" HorizontalContentAlignment="Stretch"
+        <ProgressBar IsIndeterminate="True" Name="EventsProgressBarr" Grid.Row="1" 
+                     Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}"/>
+
+        <ListView HorizontalAlignment="Stretch" Grid.Row="2" Name="EventViewList" 
+                  HorizontalContentAlignment="Stretch"
                   ItemsSource="{x:Bind EventViewModelCS.View, Mode=OneWay}" 
-                  ItemTemplateSelector="{StaticResource MeetingTemplateSelector}" 
+                  ItemTemplate="{StaticResource FirstMeetingTemplate}" 
                   Margin="0" Padding="0"
                   IsItemClickEnabled="True"
                   ItemClick="{x:Bind ViewModel.ItemClick}"
@@ -45,8 +50,7 @@
                             <Grid Margin="0" Padding="0">
                                 <TextBlock FontSize="16" 
                                            Text="{Binding Key, Converter={StaticResource DateStringConverter}}"
-                                           Foreground="#FF0070C0" Margin="0,0,0,0" FontWeight="Bold"
-                                           />
+                                           Foreground="#FF0070C0" Margin="0,0,0,0" FontWeight="Bold" />
                             </Grid>
                         </DataTemplate>
                     </GroupStyle.HeaderTemplate>

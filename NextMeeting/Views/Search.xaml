@@ -15,12 +15,14 @@
             <conv:NotBooleanVisibilityConverter x:Key="NotBooleanVisibilityConverter" />
         </Grid.Resources>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="80" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <AutoSuggestBox Margin="10" Grid.Row="0" PlaceholderText="Type name..."
+        <TextBlock Text="Search" Style="{StaticResource TitleStyle}" />
+
+        <AutoSuggestBox Margin="10" Grid.Row="1" PlaceholderText="Type name..."
                         QueryIcon="Find" Name="AutoSuggestBox"
                         QuerySubmitted="{x:Bind ViewModel.QuerySubmitted}" />
 

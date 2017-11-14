@@ -18,10 +18,11 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.ViewModels
 {
-    public class EventsViewModel : INotifyPropertyChanged, IRefresh
+    public class EventsViewModel : INotifyPropertyChanged, IViewModelNavigable
     {
         private INavigationService navigationService;
         private readonly IUserProvider userProvider;
@@ -31,14 +32,30 @@ namespace NextMeeting.ViewModels
         protected void RaisePropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         private IEnumerable<IGrouping<DateTime, EventModel>> events;
-
+        private bool isLoading;
 
         public EventsViewModel(INavigationService navigationService, IGraphProvider graphProvider, IUserProvider userProvider)
         {
             this.navigationService = navigationService;
             this.userProvider = userProvider;
             this.graphServiceClient = graphProvider.GetAuthenticatedGraphClient();
+        }
 
+        /// <summary>
+        /// you can use IsLoading for any loading purpose
+        /// </summary>
+        public bool IsLoading
+        {
+            get
+            {
+                return isLoading;
+            }
+
+            set
+            {
+                isLoading = value;
+                RaisePropertyChanged(nameof(IsLoading));
+            }
         }
 
 
@@ -60,20 +77,28 @@ namespace NextMeeting.ViewModels
                 }
             }
         }
-
-
-        public void ItemClick(object sender, ItemClickEventArgs e)
+        public async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
         {
-            var eventModel = e.ClickedItem as EventModel;
-            this.navigationService.NavigateToPage<EventDetails>(eventModel);
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            this.IsLoading = true;
+            await Refresh(false, cancellationToken);
+            this.IsLoading = false;
         }
 
-
-        /// <summary>
-        /// Refresh all events 
-        /// </summary>
-        public async Task RefreshAsync(object parameter)
+        public async Task Navigating(NavigatingCancelEventArgs e)
         {
+            e.Cancel = true;
+            await Task.CompletedTask;
+        }
+
+        public async Task Refresh(bool forceRefresh, CancellationToken cancellationToken)
+        {
+
+            if (!forceRefresh && this.Events != null && this.Events.Count() > 0)
+                return;
+            
             // set calendar request options
             // Dont start with UtcNow to not go on yesterday
             var start = DateTime.UtcNow.Date.ToString("o");
@@ -81,14 +106,9 @@ namespace NextMeeting.ViewModels
 
             IUserCalendarViewCollectionRequest calendarRequest;
 
-            
-
             calendarRequest = this.graphServiceClient.Me.CalendarView.Request();
             calendarRequest.QueryOptions.Add(new QueryOption("startDateTime", start));
             calendarRequest.QueryOptions.Add(new QueryOption("endDateTime", end));
-
-            //if (forceRefresh)
-            //    this.events.Clear();
 
             try
             {
@@ -98,6 +118,9 @@ namespace NextMeeting.ViewModels
 
                 while (userCalendarView.NextPageRequest != null)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+
                     userCalendarView = await userCalendarView.NextPageRequest.GetAsync();
                     newEvents.AddRange(userCalendarView.CurrentPage);
                 }
@@ -111,21 +134,30 @@ namespace NextMeeting.ViewModels
 
                 var events = new List<EventModel>();
                 var index = 0;
-                foreach (var e in queryableEvents)
+                foreach (var eve in queryableEvents)
                 {
-                    var em = new EventModel(e);
+                    var em = new EventModel(eve);
                     em.Index = index;
                     events.Add(em);
                     index++;
                 }
 
                 // Making the events, grouped by date
-                var gEvents = from e in events
-                              group e by e.StartingDate.Date;
+                var gEvents = from eve in events
+                              group eve by eve.StartingDate.Date;
+
+                if (cancellationToken.IsCancellationRequested)
+                    return;
 
                 this.Events = gEvents;
 
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
                 await this.UpdateSharedItems();
+
+                if (cancellationToken.IsCancellationRequested)
+                    return;
 
                 await this.UpdateUsers();
             }
@@ -133,8 +165,14 @@ namespace NextMeeting.ViewModels
             {
                 Debug.WriteLine(ex.Message);
             }
-
         }
+
+        public void ItemClick(object sender, ItemClickEventArgs e)
+        {
+            var eventModel = e.ClickedItem as EventModel;
+            this.navigationService.NavigateToPage<EventDetails>(eventModel);
+        }
+
 
         private async Task UpdateSharedItems()
         {
@@ -268,6 +306,7 @@ namespace NextMeeting.ViewModels
             }
         }
 
+  
     }
 
     public class MeetingTemplateSelector : DataTemplateSelector

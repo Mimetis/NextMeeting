@@ -15,10 +15,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.ViewModels
 {
-    public class SearchesViewModel : INotifyPropertyChanged, IRefresh
+    public class SearchesViewModel : INotifyPropertyChanged, IViewModelNavigable
     {
         private INavigationService navigationService;
         private GraphServiceClient graphServiceClient;
@@ -29,6 +30,17 @@ namespace NextMeeting.ViewModels
         protected void RaisePropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public ObservableCollection<UserModel> Users { get; set; } = new ObservableCollection<UserModel>();
+
+        public async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
+        {
+            this.Users.Clear();
+            await Task.CompletedTask;
+        }
+
+        public async Task Navigating(NavigatingCancelEventArgs e)
+        {
+            await Task.CompletedTask;
+        }
 
 
         /// <summary>
@@ -47,10 +59,7 @@ namespace NextMeeting.ViewModels
                 RaisePropertyChanged(nameof(IsLoading));
             }
         }
-        public async Task RefreshAsync(object parameter)
-        {
-            this.Users.Clear();
-        }
+  
 
         public SearchesViewModel(INavigationService navigationService, IGraphProvider graphProvider)
         {
@@ -185,6 +194,8 @@ namespace NextMeeting.ViewModels
 
             navigationService.NavigateToPage<ProfileDetails>(item);
         }
+
+
 
     }
 }

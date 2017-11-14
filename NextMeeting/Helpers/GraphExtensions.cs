@@ -47,9 +47,9 @@ namespace NextMeeting.Helpers
         {
             try
             {
-
                 HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post,
                     "https://graph.microsoft.com/beta/$batch");
+
                 JArray requests = new JArray();
 
                 var jo = new JObject(

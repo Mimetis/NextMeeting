@@ -114,28 +114,27 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\EventCollection.cs" />
     <Compile Include="Models\EventModel.cs" />
     <Compile Include="Models\ResourceModel.cs" />
-    <Compile Include="Models\UserCollection.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Navigation\FrameAdapter.cs" />
-    <Compile Include="Navigation\IFrameAdapter.cs" />
     <Compile Include="Navigation\INavigationCommand.cs" />
     <Compile Include="Navigation\INavigationService.cs" />
     <Compile Include="Navigation\IPageViewModel.cs" />
-    <Compile Include="Navigation\IRefresh.cs" />
+    <Compile Include="Navigation\IViewModelNavigable.cs" />
     <Compile Include="Navigation\NavigationService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ressources\DataTemplatesRessources.xaml.cs">
       <DependentUpon>DataTemplatesRessources.xaml</DependentUpon>
     </Compile>
     <Compile Include="Services\GraphProvider.cs" />
+    <Compile Include="Services\IAuthenticationProvider2.cs" />
     <Compile Include="Services\IGraphProvider.cs" />
     <Compile Include="Services\IUserProvider.cs" />
-    <Compile Include="Services\MsalAuthenticationProvider.cs" />
+    <Compile Include="Services\AuthenticationProvider.cs" />
     <Compile Include="Services\UserProvider.cs" />
     <Compile Include="Services\WamProvider.cs" />
+    <Compile Include="ViewModels\LogoutViewModel.cs" />
     <Compile Include="ViewModels\ProfileDetailsViewModel.cs" />
     <Compile Include="ViewModels\EventDetailsViewModel.cs" />
     <Compile Include="ViewModels\SearchesViewModel.cs" />
@@ -146,6 +145,12 @@
       <DependentUpon>Events.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\EventsViewModel.cs" />
+    <Compile Include="Login.xaml.cs">
+      <DependentUpon>Login.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Logout.xaml.cs">
+      <DependentUpon>Logout.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ProfileDetails.xaml.cs">
       <DependentUpon>ProfileDetails.xaml</DependentUpon>
     </Compile>
@@ -177,9 +182,11 @@
     <Content Include="Assets\Icon-xlsx.png" />
     <Content Include="Assets\Icon-xml.png" />
     <Content Include="Assets\icon-zip.png" />
+    <Content Include="Assets\LoginImage.png" />
     <Content Include="Assets\LogoColor.PNG" />
     <Content Include="Assets\LogoMid.png" />
     <Content Include="Assets\LogotypeMid.png" />
+    <Content Include="Assets\MicrosoftLogo.PNG" />
     <Content Include="Assets\Square310x310Logo.scale-200.png" />
     <Content Include="Assets\Square71x71Logo.scale-200.png" />
     <Content Include="Assets\UnknownPerson.jpg" />
@@ -226,6 +233,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Events.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Login.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Logout.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

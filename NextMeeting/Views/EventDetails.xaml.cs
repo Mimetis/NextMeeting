@@ -22,14 +22,26 @@ namespace NextMeeting.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class EventDetails : Page, IPageViewModel<EventDetailsViewModel>
+    public sealed partial class EventDetails : Page, IPageWithViewModel<EventDetailsViewModel>
     {
         public EventDetails()
         {
             this.InitializeComponent();
         }
 
-        public EventDetailsViewModel ViewModel { get; set; }
+        EventDetailsViewModel viewModel;
+        public EventDetailsViewModel ViewModel
+        {
+            get
+            {
+                return viewModel;
+            }
+        }
+
+        public void SetViewModel(IViewModelNavigable viewModel)
+        {
+            this.viewModel = viewModel as EventDetailsViewModel;
+        }
 
         private void Pivot_PivotItemLoading(Pivot sender, PivotItemEventArgs args)
         {

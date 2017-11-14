@@ -25,7 +25,10 @@ namespace NextMeeting.Controls
             this.InitializeComponent();
         }
 
-       public ItemBody Body
+        /// <summary>
+        /// Gets or Sets the body text, issued from the Graph api. Can be either html or txt
+        /// </summary>
+        public ItemBody Body
         {
             get { return (ItemBody)GetValue(BodyProperty); }
             set { SetValue(BodyProperty, value); }
@@ -33,8 +36,8 @@ namespace NextMeeting.Controls
 
         // Using a DependencyProperty as the backing store for Body.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty BodyProperty =
-            DependencyProperty.Register("Body", typeof(ItemBody), typeof(BodyEventControl), 
-                new PropertyMetadata(null, OnBodyChanged ));
+            DependencyProperty.Register("Body", typeof(ItemBody), typeof(BodyEventControl),
+                new PropertyMetadata(null, OnBodyChanged));
 
         private static void OnBodyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -52,7 +55,8 @@ namespace NextMeeting.Controls
                 BodyWebview.Visibility = Visibility.Visible;
                 BodyTextBlock.Visibility = Visibility.Collapsed;
                 BodyWebview.NavigateToString(Body.Content);
-            }else
+            }
+            else
             {
                 BodyWebview.Visibility = Visibility.Collapsed;
                 BodyTextBlock.Visibility = Visibility.Visible;

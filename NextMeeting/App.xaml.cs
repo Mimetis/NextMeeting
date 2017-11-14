@@ -35,7 +35,7 @@ namespace NextMeeting
     {
 
 
- 
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -53,44 +53,14 @@ namespace NextMeeting
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            MainPage mainPage = Window.Current.Content as MainPage;
+            Frame rootFrame = Window.Current.Content as Frame;
 
-            // Do not repeat app initialization when the Window already has content,
-            // just ensure that the window is active
-            if (mainPage == null)
+            if (rootFrame == null)
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
-                mainPage = new MainPage();
+                rootFrame = new Frame();
 
-                // Using a frame adapter to be able to inject it through DI
-                FrameAdapter adapter = new FrameAdapter(mainPage.AppFrame);
-
-                // Register the FrameAdapter object
-                ContainerHelper.Current.Builder.RegisterInstance(adapter).As<IFrameAdapter>();
-
-                // Register graph service
-                ContainerHelper.Current.Builder.RegisterType<GraphProvider>().As<IGraphProvider>();
-
-                // Register user service
-                ContainerHelper.Current.Builder.RegisterType<UserProvider>().As<IUserProvider>();
-
-                // Register a Navigation Service single instance
-                ContainerHelper.Current.Builder.RegisterType<NavigationService>().As<INavigationService>().SingleInstance();
-
-                // Register a view model and then associated with its own view
-                ContainerHelper.Current.RegisterTypeWithViewModel<EventsViewModel, Events>();
-                ContainerHelper.Current.RegisterTypeWithViewModel<SearchesViewModel, Search>();
-                ContainerHelper.Current.RegisterTypeWithViewModel<EventDetailsViewModel, EventDetails>();
-                ContainerHelper.Current.RegisterTypeWithViewModel<ProfileDetailsViewModel, ProfileDetails>();
-
-                // Create the container 
-                ContainerHelper.Current.Build();
-
-                // Don't want to register Main page, but we need the Navigation service
-                mainPage.InitializeNavigationService(ContainerHelper.Current.Container.Resolve<INavigationService>());
-
-
-                adapter.NavigationFailed += OnNavigationFailed;
+                rootFrame.NavigationFailed += OnNavigationFailed;
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
@@ -98,22 +68,20 @@ namespace NextMeeting
                 }
 
                 // Place the frame in the current Window
-                Window.Current.Content = mainPage;
-
-                // Ensure the current window is active
-                Window.Current.Activate();
-
-                SetupTitlebar();
+                Window.Current.Content = rootFrame;
             }
 
             if (e.PrelaunchActivated == false)
             {
-                if (mainPage.Content == null)
+                if (rootFrame.Content == null)
                 {
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
+                    rootFrame.Navigate(typeof(Login), e.Arguments);
                 }
+                // Ensure the current window is active
+                Window.Current.Activate();
             }
         }
 
@@ -126,7 +94,7 @@ namespace NextMeeting
         /// <summary>
         /// Setting a personal title bar
         /// </summary>
-        private static void SetupTitlebar()
+        public static void SetupTitlebar()
         {
             if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.ApplicationView"))
             {
@@ -165,7 +133,6 @@ namespace NextMeeting
         /// <param name="e">Details about the navigation failure</param>
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
         /// <summary>

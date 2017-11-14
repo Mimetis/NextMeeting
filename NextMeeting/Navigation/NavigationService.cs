@@ -12,11 +12,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Toolkit.Uwp.Helpers;
 using NextMeeting.Helpers;
 using NextMeeting.Services;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
@@ -24,46 +28,57 @@ namespace NextMeeting.Navigation
 {
     public class NavigationService : INavigationService
     {
-        private bool _isNavigating;
+        private bool isNavigating;
+        private CancellationTokenSource tokenSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NavigationService"/> class.
         /// </summary>
-        /// <param name="frameAdapter"></param>
-        /// <param name="iocResolver"></param>
-        public NavigationService(IFrameAdapter frame, IComponentContext iocResolver, IGraphProvider graphProvider)
+        public NavigationService(Frame frame)
         {
             Frame = frame;
-            GraphProvider = graphProvider;
+
+            // Register events
             Frame.Navigated += Frame_Navigated;
+            Frame.Navigating += Frame_Navigating;
+            Frame.NavigationFailed += (s, e) => throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
+
         }
 
-        public event EventHandler<bool> IsNavigatingChanged;
-
-        public event EventHandler Navigated;
+        
+        public event EventHandler<NavigationEventArgs> Navigated;
 
         public bool CanGoBack => Frame.CanGoBack;
 
-        private IFrameAdapter Frame { get; }
-        public IGraphProvider GraphProvider { get; }
+        /// <summary>
+        /// Gets the main page IFrame
+        /// </summary>
+        private Frame Frame { get; }
 
+        ///// <summary>
+        ///// Graphprovider, 
+        ///// </summary>
+        //public IGraphProvider GraphProvider { get; }
+
+        /// <summary>
+        /// Gets or Sets a value indicating if we are currently navigating
+        /// </summary>
         public bool IsNavigating
         {
-            get => _isNavigating;
+            get => isNavigating;
 
             set
             {
-                if (value != _isNavigating)
+                if (value != isNavigating)
                 {
-                    _isNavigating = value;
-                    IsNavigatingChanged?.Invoke(this, _isNavigating);
+                    isNavigating = value;
+
+                    //IsNavigatingChanged?.Invoke(this, isNavigating);
 
                     // Check that navigation just finished
-                    if (!_isNavigating)
-                    {
-                        // Navigation finished
-                        Navigated?.Invoke(this, EventArgs.Empty);
-                    }
+                    //if (!isNavigating)
+                    //    // Navigation finished
+                    //    Navigated?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -78,43 +93,70 @@ namespace NextMeeting.Navigation
             {
                 IsNavigating = true;
 
-                Page navigatedPage = await DispatcherHelper.ExecuteOnUIThreadAsync(() =>
-                {
-                    Frame.GoBack();
-                    return Frame.Content as Page;
-                });
+                if (tokenSource != null)
+                    tokenSource.Cancel();
+
+                await DispatcherHelper.ExecuteOnUIThreadAsync(() => Frame.GoBack());
             }
         }
 
         /// <summary>
-        /// The Navigated event. This event is raised BEFORE <see cref="Page.OnNavigatedTo(NavigationEventArgs)"/>
+        /// The Navigating event. Occurs before Page.OnNavigatingFrom
         /// </summary>
-        private void Frame_Navigated(object sender, NavigationEventArgs e)
+        private async void Frame_Navigating(object sender, NavigatingCancelEventArgs e)
         {
-            var sourcePageType = e.SourcePageType;
+            MainPage mainPage = Window.Current.Content as MainPage;
 
-            Page page = e.Content as Page;
-
-            if (page == null)
+            if (mainPage == null)
                 return;
 
-           
-            // Get the the ViewModel type associated with the view
-            var vmType = ContainerHelper.Current.GetViewModelType(sourcePageType);
+            IPageWithViewModel pageWithViewModel = mainPage.AppFrame.Content as IPageWithViewModel;
 
-            if (vmType.PageType != null)
+            if (pageWithViewModel == null)
+                return;
+
+            // Get the view model associated with the current page
+            var viewModelNavigable = ContainerHelper.Current.GetPageViewModel(e.SourcePageType);
+
+            if (viewModelNavigable != null)
             {
-                // Get the viewmodel instance
-                var vm = ContainerHelper.Current.Container.Resolve(vmType.PageType);
-
-                // Call the refresh method
-                if (vm != null)
-                    vmType.Refresh(page, vm, e.Parameter);
+                pageWithViewModel.SetViewModel(viewModelNavigable);
+                await viewModelNavigable.Navigating(e);
             }
+
+            IsNavigating = !e.Cancel;
+        }
+
+
+        /// <summary>
+        /// The Navigated event. This event is raised BEFORE Page.OnNavigatedTo 
+        /// </summary>
+        private async void Frame_Navigated(object sender, NavigationEventArgs e)
+        {
+            IPageWithViewModel pageWithViewModel = e.Content as IPageWithViewModel;
+
+            if (pageWithViewModel == null)
+                return;
+
+            // Get the view model associated with the current page
+            var viewModelNavigable = ContainerHelper.Current.GetPageViewModel(e.SourcePageType);
+
+            if (viewModelNavigable != null)
+            {
+                tokenSource = new CancellationTokenSource();
+                pageWithViewModel.SetViewModel(viewModelNavigable);
+
+                // Check event
+                Navigated?.Invoke(this, e);
+
+                await viewModelNavigable.Navigated(e, tokenSource.Token);
+            }
+
 
             IsNavigating = false;
 
         }
+
 
         /// <summary>
         /// Navigate to a page without parameter
@@ -130,18 +172,19 @@ namespace NextMeeting.Navigation
         public async Task NavigateToPage<TPage>(object parameter)
         {
             // Early out if already in the middle of a Navigation
-            if (_isNavigating)
-                return;
+            if (isNavigating && tokenSource != null)
+                tokenSource.Cancel();
 
-            _isNavigating = true;
+            isNavigating = true;
 
-            await DispatcherHelper.ExecuteOnUIThreadAsync(() => Frame.Navigate(typeof(TPage), parameter));
+            await DispatcherHelper.ExecuteOnUIThreadAsync(() =>
+                            Frame.Navigate(typeof(TPage), parameter));
 
         }
 
-        public void Disconnect()
-        {
-            this.GraphProvider.SignOut();
-        }
+        //public void Disconnect()
+        //{
+        //    this.GraphProvider.SignOut();
+        //}
     }
 }

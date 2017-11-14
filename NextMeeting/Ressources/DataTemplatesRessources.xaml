@@ -11,42 +11,7 @@
 
     <conv:BooleanVisibilityConverter x:Key="BooleanVisibilityConverter" />
     <conv:NotBooleanVisibilityConverter x:Key="NotBooleanVisibilityConverter" />
-    <viewModels:MeetingTemplateSelector x:Key="MeetingTemplateSelector" 
-                                       MeetingTemplate="{StaticResource MeetingTemplate}"
-                                       FirstMeetingTemplate="{StaticResource FirstMeetingTemplate}" />
-
  
-
-    <DataTemplate x:DataType="models:EventModel" x:Key="MeetingTemplate">
-        <Grid Margin="0" HorizontalAlignment="Stretch" Background="White" MinHeight="60" >
-            <Border BorderBrush="#C6C6C6C6" BorderThickness="1" />
-            <Border Margin="1" BorderBrush="#FF0070C0" 
-                    BorderThickness="2,0,0,0" />
-            <RelativePanel Margin="8,5,0,2">
-                <Image Name="WaitingIconImage" Source="/Assets/UnknownPerson.jpg" Width="40" Height="40" Stretch="UniformToFill" />
-                <Image Name="IconImage" Source="{x:Bind Organizer.Photo, Mode=OneWay, FallbackValue='/Assets/UnknownPerson.jpg'}"
-                           Width="50" Height="50" 
-                           Stretch="UniformToFill" />
-
-                <TextBlock Name="OrganizerTextBlock" RelativePanel.RightOf="IconImage" RelativePanel.AlignTopWith="IconImage"
-                               Margin="4,0,0,0" Text="{x:Bind Organizer.DisplayName, Mode=OneWay}" FontWeight="Bold" FontSize="12" />
-
-                <TextBlock Name="SubjectTextBlock" RelativePanel.Below="OrganizerTextBlock" 
-                               Margin="4,0,0,0" RelativePanel.AlignLeftWith="OrganizerTextBlock"
-                               Text="{x:Bind Subject, Mode=OneWay}" FontWeight="Bold" FontSize="12" />
-                <SymbolIcon 
-                     Margin="4,0,0,0" RelativePanel.Below="SubjectTextBlock" 
-                           RelativePanel.AlignLeftWith="SubjectTextBlock" 
-                    Symbol="Clock" Foreground="Black" Name="IconTimeImage"/>
-                <TextBlock Name="TimeDeltaTextBlock"
-                               RelativePanel.RightOf="IconTimeImage" 
-                               RelativePanel.AlignVerticalCenterWith="IconTimeImage"
-                               Margin="4,0,0,0" 
-                               Text="{x:Bind TimeDelta, Mode=OneWay}" FontSize="10" />
-            </RelativePanel>
-
-        </Grid>
-    </DataTemplate>
 
     <DataTemplate x:DataType="models:EventModel" x:Key="FirstMeetingTemplate">
        

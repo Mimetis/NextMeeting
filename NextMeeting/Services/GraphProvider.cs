@@ -11,27 +11,26 @@ namespace NextMeeting.Services
 {
     public class GraphProvider : IGraphProvider
     {
-        private string[] scopes = new string[] {"Files.Read.All", "People.Read",  "Mail.Read", "User.Read", "User.ReadBasic.All", "Calendars.Read", "Sites.Read.All" };
-
-        private PublicClientApplication pca = new PublicClientApplication("b70aac0e-0084-4145-a852-d8d126ae3e95", 
-            "https://login.microsoftonline.com/common");
-
+        private IAuthenticationProvider2 authenticationProvider;
         private GraphServiceClient graphClient;
+
+        public GraphProvider(IAuthenticationProvider2 authenticationProvider)
+        {
+            this.authenticationProvider = authenticationProvider;
+        }
 
         public GraphServiceClient GetAuthenticatedGraphClient()
         {
             if (graphClient != null)
                 return graphClient;
 
-            graphClient = new GraphServiceClient("https://graph.microsoft.com/beta", new MsalAuthenticationProvider(pca, scopes));
+            graphClient = new GraphServiceClient("https://graph.microsoft.com/beta", authenticationProvider);
             return graphClient;
         }
 
         public void SignOut()
         {
-            foreach (var user in pca.Users)
-                pca.Remove(user);
-
+            authenticationProvider.Logout();
             this.graphClient = null;
         }
 

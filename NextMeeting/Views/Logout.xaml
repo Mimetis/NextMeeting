@@ -1,0 +1,21 @@
+﻿<Page
+    x:Class="NextMeeting.Views.Logout"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NextMeeting.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <Button Content="Logout" 
+                Click="{x:Bind ViewModel.Logout}" 
+                HorizontalAlignment="Stretch" 
+                Foreground="White" Width="350" Height="60" 
+                HorizontalContentAlignment="Center"
+                Background="#FF0070C0" 
+                Margin="0,0,0,20" VerticalContentAlignment="Center" FontSize="24" />
+
+    </Grid>
+</Page>

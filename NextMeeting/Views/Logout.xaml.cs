@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -23,42 +22,19 @@ namespace NextMeeting.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class Events : Page, IPageWithViewModel<EventsViewModel>
+    public sealed partial class Logout : Page, IPageWithViewModel<LogoutViewModel>
     {
-        public Events()
+        public Logout()
         {
             this.InitializeComponent();
         }
+        LogoutViewModel viewModel;
 
-        EventsViewModel viewModel;
-        public EventsViewModel ViewModel
-        {
-            get
-            {
-                return viewModel;
-            }
-        }
+        public LogoutViewModel ViewModel => viewModel;
 
         public void SetViewModel(IViewModelNavigable viewModel)
         {
-            this.viewModel = viewModel as EventsViewModel;
+            this.viewModel = viewModel as LogoutViewModel;
         }
-
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            base.OnNavigatedFrom(e);
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-        }
-
-        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
-        {
-            base.OnNavigatingFrom(e);
-        }
-
-
     }
 }

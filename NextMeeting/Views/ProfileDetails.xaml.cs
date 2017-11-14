@@ -22,13 +22,24 @@ namespace NextMeeting.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class ProfileDetails : Page, IPageViewModel<ProfileDetailsViewModel>
+    public sealed partial class ProfileDetails : Page, IPageWithViewModel<ProfileDetailsViewModel>
     {
         public ProfileDetails()
         {
             this.InitializeComponent();
         }
+        ProfileDetailsViewModel viewModel;
+        public ProfileDetailsViewModel ViewModel
+        {
+            get
+            {
+                return viewModel;
+            }
+        }
 
-        public ProfileDetailsViewModel ViewModel { get; set; }
+        public void SetViewModel(IViewModelNavigable viewModel)
+        {
+            this.viewModel = viewModel as ProfileDetailsViewModel;
+        }
     }
 }

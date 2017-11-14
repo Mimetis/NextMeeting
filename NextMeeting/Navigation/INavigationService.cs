@@ -12,15 +12,15 @@
 
 using System;
 using System.Threading.Tasks;
-
+using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.Navigation
 {
     public interface INavigationService
     {
-        event EventHandler<bool> IsNavigatingChanged;
+        //event EventHandler<bool> IsNavigatingChanged;
 
-        event EventHandler Navigated;
+        event EventHandler<NavigationEventArgs> Navigated;
 
         bool CanGoBack { get; }
 
@@ -32,6 +32,6 @@ namespace NextMeeting.Navigation
 
         Task GoBackAsync();
 
-        void Disconnect();
+        //void Disconnect();
     }
 }

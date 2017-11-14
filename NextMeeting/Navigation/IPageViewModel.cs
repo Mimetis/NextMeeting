@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace NextMeeting.Navigation
 {
-
-
-
-    public interface IPageViewModel<TViewModel>
+    public interface IPageWithViewModel 
     {
-        TViewModel ViewModel { get; set; }
-
+        void SetViewModel(IViewModelNavigable viewModel);
     }
+
+    public interface IPageWithViewModel<TViewModel> : IPageWithViewModel
+    {
+        TViewModel ViewModel { get; }
+    }
+
 }

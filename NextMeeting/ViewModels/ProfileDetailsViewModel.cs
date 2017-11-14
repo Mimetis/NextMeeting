@@ -17,10 +17,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.ViewModels
 {
-    public class ProfileDetailsViewModel : INotifyPropertyChanged, IRefresh
+    public class ProfileDetailsViewModel : INotifyPropertyChanged, IViewModelNavigable
     {
         private INavigationService navigationService;
         private IUserProvider userProvider;
@@ -107,12 +108,13 @@ namespace NextMeeting.ViewModels
             }
         }
 
-        public async Task RefreshAsync(object parameter)
+
+        public async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
         {
-            if (parameter == null)
+            if (e.Parameter == null)
                 return;
 
-            this.User = parameter as UserModel;
+            this.User = e.Parameter as UserModel;
 
             await this.LoadTeamAsync();
 
@@ -120,6 +122,12 @@ namespace NextMeeting.ViewModels
 
             await this.LoadUserItemsAsync();
         }
+
+        public async Task Navigating(NavigatingCancelEventArgs e)
+        {
+            await Task.CompletedTask;
+        }
+
 
 
         private async Task LoadUserItemsAsync()
@@ -288,5 +296,7 @@ namespace NextMeeting.ViewModels
 
             this.IsLoadingTeam = false;
         }
+
+
     }
 }
