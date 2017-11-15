@@ -8,10 +8,10 @@ using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.Navigation
 {
-    public interface IViewModelNavigable
-    {
-        Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken);
+    //public interface IViewModelNavigable
+    //{
+    //    Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken);
 
-        Task Navigating(NavigatingCancelEventArgs e);
-    }
+    //    Task Navigating(NavigatingCancelEventArgs e);
+    //}
 }

@@ -22,14 +22,12 @@ using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.ViewModels
 {
-    public class EventsViewModel : INotifyPropertyChanged, IViewModelNavigable
+    public class EventsViewModel : BaseViewModel
     {
         private INavigationService navigationService;
         private readonly IUserProvider userProvider;
         private readonly IGraphServiceClient graphServiceClient;
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void RaisePropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         private IEnumerable<IGrouping<DateTime, EventModel>> events;
         private bool isLoading;
@@ -77,7 +75,7 @@ namespace NextMeeting.ViewModels
                 }
             }
         }
-        public async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
+        public override async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
                 return;
@@ -87,11 +85,6 @@ namespace NextMeeting.ViewModels
             this.IsLoading = false;
         }
 
-        public async Task Navigating(NavigatingCancelEventArgs e)
-        {
-            e.Cancel = true;
-            await Task.CompletedTask;
-        }
 
         public async Task Refresh(bool forceRefresh, CancellationToken cancellationToken)
         {

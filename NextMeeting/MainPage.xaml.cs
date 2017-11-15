@@ -136,6 +136,7 @@ namespace NextMeeting
                     await _navigationService.NavigateToPage<Logout>();
                     break;
             }
+
         }
     }
 }

@@ -32,7 +32,7 @@ namespace NextMeeting.Views
 
         public LogoutViewModel ViewModel => viewModel;
 
-        public void SetViewModel(IViewModelNavigable viewModel)
+        public void SetViewModel(BaseViewModel viewModel)
         {
             this.viewModel = viewModel as LogoutViewModel;
         }

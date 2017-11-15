@@ -115,8 +115,12 @@ namespace NextMeeting.Navigation
             if (pageWithViewModel == null)
                 return;
 
+            // click on the same page
+            if (pageWithViewModel.GetType() == e.SourcePageType)
+                return;
+
             // Get the view model associated with the current page
-            var viewModelNavigable = ContainerHelper.Current.GetPageViewModel(e.SourcePageType);
+            var viewModelNavigable = ContainerHelper.Current.GetPageViewModel(pageWithViewModel.GetType());
 
             if (viewModelNavigable != null)
             {

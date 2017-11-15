@@ -19,29 +19,14 @@ using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.ViewModels
 {
-    public class SearchesViewModel : INotifyPropertyChanged, IViewModelNavigable
+    public class SearchesViewModel : BaseViewModel
     {
         private INavigationService navigationService;
         private GraphServiceClient graphServiceClient;
         private CancellationTokenSource cancellationTokenSource;
         private bool isLoading = false;
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void RaisePropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
         public ObservableCollection<UserModel> Users { get; set; } = new ObservableCollection<UserModel>();
-
-        public async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
-        {
-            this.Users.Clear();
-            await Task.CompletedTask;
-        }
-
-        public async Task Navigating(NavigatingCancelEventArgs e)
-        {
-            await Task.CompletedTask;
-        }
-
 
         /// <summary>
         /// you can use IsLoading for any loading purpose

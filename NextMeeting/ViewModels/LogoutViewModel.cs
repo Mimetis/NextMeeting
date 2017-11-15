@@ -15,20 +15,13 @@ using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.ViewModels
 {
-    public class LogoutViewModel : INotifyPropertyChanged, IViewModelNavigable
+    public class LogoutViewModel : BaseViewModel
     {
         private readonly IGraphProvider graphProvider;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void RaisePropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public LogoutViewModel(IGraphProvider graphProvider)
         {
             this.graphProvider = graphProvider;
-        }
-        public async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -55,9 +48,5 @@ namespace NextMeeting.ViewModels
 
         }
 
-        public Task Navigating(NavigatingCancelEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -38,7 +38,7 @@ namespace NextMeeting.Views
             }
         }
 
-        public void SetViewModel(IViewModelNavigable viewModel)
+        public void SetViewModel(BaseViewModel viewModel)
         {
             this.viewModel = viewModel as SearchesViewModel;
         }

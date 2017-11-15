@@ -8,8 +8,15 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <Button Content="Logout" 
+        <TextBlock Text="Loogout" Style="{StaticResource TitleStyle}" />
+
+        <Button Content="Logout"
+                Grid.Row="1"
                 Click="{x:Bind ViewModel.Logout}" 
                 HorizontalAlignment="Stretch" 
                 Foreground="White" Width="350" Height="60" 

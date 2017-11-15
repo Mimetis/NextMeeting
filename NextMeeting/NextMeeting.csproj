@@ -134,6 +134,7 @@
     <Compile Include="Services\AuthenticationProvider.cs" />
     <Compile Include="Services\UserProvider.cs" />
     <Compile Include="Services\WamProvider.cs" />
+    <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\LogoutViewModel.cs" />
     <Compile Include="ViewModels\ProfileDetailsViewModel.cs" />
     <Compile Include="ViewModels\EventDetailsViewModel.cs" />

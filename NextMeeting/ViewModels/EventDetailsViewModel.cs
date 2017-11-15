@@ -20,7 +20,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace NextMeeting.ViewModels
 {
-    public class EventDetailsViewModel : INotifyPropertyChanged, IViewModelNavigable
+    public class EventDetailsViewModel : BaseViewModel
     {
         private INavigationService navigationService;
         private IUserProvider userProvider;
@@ -45,9 +45,6 @@ namespace NextMeeting.ViewModels
                 }
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void RaisePropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public EventDetailsViewModel(INavigationService navigationService, IGraphProvider graphProvider, IUserProvider userProvider)
         {
@@ -110,7 +107,7 @@ namespace NextMeeting.ViewModels
 
 
 
-        public async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
+        public override async Task Navigated(NavigationEventArgs e, CancellationToken cancellationToken)
         {
             if (e.Parameter == null)
                 return;
@@ -123,12 +120,6 @@ namespace NextMeeting.ViewModels
 
             await this.LoadUserItemsAsync();
         }
-
-        public async Task Navigating(NavigatingCancelEventArgs e)
-        {
-            await Task.CompletedTask;
-        }
-
 
 
         private async Task LoadUserItemsAsync()

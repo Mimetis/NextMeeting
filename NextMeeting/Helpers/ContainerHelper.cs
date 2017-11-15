@@ -88,7 +88,7 @@ namespace NextMeeting.Helpers
         /// <summary>
         /// Get the ViewModel associated with the current page type
         /// </summary>
-        public IViewModelNavigable GetPageViewModel(Type sourcePageType)
+        public BaseViewModel GetPageViewModel(Type sourcePageType)
         {
 
             Type viewModelType = null;
@@ -101,7 +101,9 @@ namespace NextMeeting.Helpers
             }
             else
             {
-                var currentAssembly = typeof(IViewModelNavigable).Assembly;
+                // getting the ViewModel used in the page
+                // each page implements IPageWithViewModel<ViewModel>
+                var currentAssembly = typeof(BaseViewModel).Assembly;
 
                 var interfaces = sourcePageType.GetInterfaces()
                                     .Where(i => i.IsGenericType && i.Assembly == currentAssembly).ToList();
@@ -122,7 +124,7 @@ namespace NextMeeting.Helpers
             if (viewModelType == null)
                 return null;
 
-            if (this.Container.Resolve(viewModelType) is IViewModelNavigable viewModelNavigable)
+            if (this.Container.Resolve(viewModelType) is BaseViewModel viewModelNavigable)
                 return viewModelNavigable;
 
             return null;
