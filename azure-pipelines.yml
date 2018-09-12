@@ -25,7 +25,7 @@ jobs:
   - script: docker run -e 'MYSQL_ROOT_PASSWORD=Password12!' -d mysql:latest
     displayName: 'Run MySql on Linux container'
     
-  - script: sqlcmd -S (localdb)\MSSQLLocalDB -U SA -P 'Password12!'
+  - script: sqlcmd -S localhost -U SA -P 'Password12!'
     displayName: 'Run SQLCMD'
 
 
